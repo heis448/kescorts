@@ -1,0 +1,232 @@
+import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Search, MapPin, Phone, MessageCircle, Lock, Star, ChevronRight, Image } from 'lucide-react'
+import api from '../utils/api'
+import useAuthStore from '../store/authStore'
+import BlueTick from '../components/ui/BlueTick'
+
+const normalizePhone = (phone) => {
+  let p = String(phone).replace(/[\s\-\+]/g, '')
+  if (p.startsWith('0') && p.length === 10) return '254' + p.slice(1)
+  if (p.length === 9 && (p.startsWith('7') || p.startsWith('1'))) return '254' + p
+  return p
+}
+
+const TABS = [
+  { key: 'all',      label: 'All'      },
+  { key: 'random',   label: 'Random'   },
+  { key: 'verified', label: 'Verified' },
+]
+
+function MatchCard({ profile }) {
+  const { user } = useAuthStore()
+  const isGuest = !user
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="card overflow-hidden hover:border-brand-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-900/30"
+    >
+      {/* Photo */}
+      <Link to={`/match/${profile.uuid}`} className="block relative aspect-[3/4] bg-dark-700 overflow-hidden group">
+        {profile.cover_photo ? (
+          <img
+            src={profile.cover_photo}
+            alt={profile.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-700 to-dark-800">
+            <Image size={32} className="text-gray-600" />
+          </div>
+        )}
+
+        {/* Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-transparent to-transparent" />
+
+        {/* Verified badge top-left */}
+        {profile.is_verified && (
+          <div className="absolute top-3 left-3 flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm rounded-full px-2 py-0.5">
+            <BlueTick size={14} />
+            <span className="text-xs text-blue-400 font-medium">Verified</span>
+          </div>
+        )}
+
+        {/* Media count top-right */}
+        {profile.media_count > 1 && (
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-dark-900/70 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs text-gray-300">
+            <Image size={10} /> {profile.media_count}
+          </div>
+        )}
+
+        {/* Bottom info */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-display font-semibold text-white text-lg leading-tight">{profile.name}</h3>
+            {profile.is_verified && <BlueTick size={16} />}
+          </div>
+          <div className="flex items-center gap-1 text-gray-400 text-xs mt-0.5">
+            <MapPin size={10} />
+            <span>{profile.city || profile.county || 'Kenya'}</span>
+            {profile.age && <span className="ml-1">• {profile.age} yrs</span>}
+          </div>
+        </div>
+      </Link>
+
+      {/* Body */}
+      <div className="p-3 space-y-3">
+        {profile.about && (
+          <p className="text-xs text-gray-300 line-clamp-2">{profile.about}</p>
+        )}
+
+        {/* Contact section */}
+        {!profile.is_verified ? (
+          /* Random — contact visible */
+          <div className="flex gap-2">
+            <a
+              href={`https://wa.me/${normalizePhone(profile.whatsapp || profile.phone || '')}?text=${encodeURIComponent(`Hi ${profile.name}, I found your profile on KenyanEscorts.`)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 text-green-400 text-xs font-medium transition-colors border border-green-700/30"
+            >
+              <MessageCircle size={13} /> WhatsApp
+            </a>
+            <a
+              href={`tel:${profile.phone}`}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 text-gray-300 text-xs font-medium transition-colors border border-dark-600"
+            >
+              <Phone size={13} /> Call
+            </a>
+          </div>
+        ) : (
+          /* Verified — locked */
+          <Link
+            to={`/match/${profile.uuid}`}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-colors border ${
+              isGuest
+                ? 'bg-dark-700 border-dark-600 text-gray-400 hover:border-blue-500/50 hover:text-blue-400'
+                : 'bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20'
+            }`}
+          >
+            <Lock size={12} />
+            {isGuest ? 'Login to Reveal' : `Reveal Contact · ⭐${profile.reveal_price_stars}`}
+          </Link>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
+export default function MatchPage() {
+  const [tab, setTab]           = useState('all')
+  const [q, setQ]               = useState('')
+  const [profiles, setProfiles] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [page, setPage]         = useState(1)
+  const [hasMore, setHasMore]   = useState(false)
+
+  const fetchProfiles = useCallback(async (type, query, pg) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ page: pg, limit: 20 })
+      if (type !== 'all') params.set('type', type)
+      if (query.trim()) params.set('q', query.trim())
+      const { data } = await api.get(`/match?${params}`)
+      const list = Array.isArray(data) ? data : []
+      if (pg === 1) setProfiles(list)
+      else setProfiles(prev => [...prev, ...list])
+      setHasMore(list.length === 20)
+    } catch {}
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    setPage(1)
+    fetchProfiles(tab, q, 1)
+  }, [tab, q])
+
+  return (
+    <div className="min-h-screen bg-dark-950 pb-16">
+      {/* Hero */}
+      <div className="bg-gradient-to-b from-dark-800 to-dark-950 border-b border-dark-700 px-4 pt-8 pb-6">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-white mb-1">
+            Find Your <span className="text-brand-400">Match</span>
+          </h1>
+          <p className="text-gray-400 text-sm mb-5">Browse verified and random partners across Kenya</p>
+
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              placeholder="Search by name, city, county..."
+              className="w-full bg-dark-700 border border-dark-600 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-brand-500 transition-colors"
+            />
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-2">
+            {TABS.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                  tab === t.key
+                    ? 'bg-brand-600 border-brand-500 text-white'
+                    : 'bg-dark-700 border-dark-600 text-gray-400 hover:text-white hover:border-dark-500'
+                }`}
+              >
+                {t.label}
+                {t.key === 'verified' && <BlueTick size={12} className="ml-1.5 -mt-0.5" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="max-w-5xl mx-auto px-4 pt-6">
+        {loading && profiles.length === 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="card animate-pulse">
+                <div className="aspect-[3/4] bg-dark-700 rounded" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3 bg-dark-700 rounded w-2/3" />
+                  <div className="h-3 bg-dark-700 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : profiles.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">
+            <Search size={32} className="mx-auto mb-3 opacity-30" />
+            <p>No profiles found</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {profiles.map(p => <MatchCard key={p.id} profile={p} />)}
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => { const next = page + 1; setPage(next); fetchProfiles(tab, q, next) }}
+                  disabled={loading}
+                  className="btn-ghost px-8"
+                >
+                  {loading ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
