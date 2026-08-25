@@ -356,7 +356,11 @@ export default function AdminMatch() {
                   {p.is_verified && ` · KSh ${p.reveal_price_kes?.toLocaleString()} reveal`}
                   {p.reveal_count > 0 && ` · ${p.reveal_count} reveals`}
                 </p>
-                <p className="text-xs text-gray-600">{p.media_count || 0} media files</p>
+                <div className="flex items-center gap-3 text-xs text-gray-600 mt-0.5">
+                  <span>👁 {p.profile_views || 0} views</span>
+                  <span>📞 {p.contact_clicks || 0} contact clicks</span>
+                  <span>🖼 {p.media_count || 0} media</span>
+                </div>
               </div>
 
               {/* Actions */}
