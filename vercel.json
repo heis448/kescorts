@@ -2,8 +2,8 @@
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "build": {
     "env": {
-      "VITE_API_URL": "https://mv.makamesco-tech.co.ke/kescorts/api",
-      "VITE_SOCKET_URL": "https://mv.makamesco-tech.co.ke/kescorts"
+      "VITE_API_URL": "https://otf.makamesco-tech.co.ke/kescorts/api",
+      "VITE_SOCKET_URL": "https://otf.makamesco-tech.co.ke/kescorts"
     }
   }
 }
