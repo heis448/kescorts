@@ -8,9 +8,11 @@ import { utcToZonedTime } from 'date-fns-tz'
 const KE_TZ = 'Africa/Nairobi'
 const fmt = (date, pattern) => format(utcToZonedTime(new Date(date), KE_TZ), pattern)
 import api from '../utils/api'
+import { reportError } from '../utils/reportError'
 import { getSocket } from '../utils/socket'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
+import LazyImage from '../components/ui/LazyImage'
 
 // ── Tick component ────────────────────────────────────────────────
 // sent=true → 1 grey tick (delivered to server, receiver offline)
@@ -115,7 +117,7 @@ export default function ChatPage() {
         _online: t.other_online ?? false
       }))
       setThreads(threads)
-    }).catch(() => {})
+    }).catch(e => reportError(e, 'Could not load your chats'))
     // Clients see ALL escorts sorted by online first
     if (user?.role === 'client') {
       api.get('/search/online')
@@ -427,7 +429,7 @@ export default function ChatPage() {
                   <div className="relative">
                     <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${e.is_online ? 'border-green-500' : 'border-dark-600'}`}>
                       {e.primary_photo
-                        ? <img src={e.primary_photo} className="w-full h-full object-cover" alt={e.name} />
+                        ? <LazyImage src={e.primary_photo} className="w-full h-full object-cover" alt={e.name} />
                         : <div className="w-full h-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-sm font-bold text-white">{(e.name?.[0] || '?').toUpperCase()}</div>}
                     </div>
                     {e.is_online && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-dark-800 rounded-full" />}
@@ -463,7 +465,7 @@ export default function ChatPage() {
                       <div className="relative">
                         <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${item.is_online ? 'border-green-500' : 'border-dark-600'}`}>
                           {item.profile_photo
-                            ? <img src={item.profile_photo} className="w-full h-full object-cover" alt={item.name} />
+                            ? <LazyImage src={item.profile_photo} className="w-full h-full object-cover" alt={item.name} />
                             : <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm font-bold text-white">{(item.name?.[0] || '?').toUpperCase()}</div>}
                         </div>
                         {item.is_online && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-dark-800 rounded-full" />}
@@ -482,7 +484,7 @@ export default function ChatPage() {
                         String(active) === String(item.id) ? 'border-brand-500' : item._online ? 'border-green-500' : 'border-dark-600'
                       }`}>
                         {item.other_photo
-                          ? <img src={item.other_photo} className="w-full h-full object-cover" alt={item.other_name} />
+                          ? <LazyImage src={item.other_photo} className="w-full h-full object-cover" alt={item.other_name} />
                           : <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm font-bold text-white">{(item.other_name?.[0] || '?').toUpperCase()}</div>}
                       </div>
                       {item._online && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-dark-800 rounded-full" />}
@@ -533,7 +535,7 @@ export default function ChatPage() {
                   <div className="relative flex-shrink-0">
                     <div className="w-10 h-10 rounded-full bg-dark-600 overflow-hidden">
                       {t.other_photo
-                      ? <img src={t.other_photo} className="w-full h-full object-cover" alt="" />
+                      ? <LazyImage src={t.other_photo} className="w-full h-full object-cover" alt="" />
                       : <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm font-bold text-white">{(t.other_name?.[0] || '?').toUpperCase()}</div>}
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5">
@@ -589,7 +591,7 @@ export default function ChatPage() {
                       : ''
                   }`}>
                     {activeThread?.other_photo
-                      ? <img src={activeThread.other_photo} className="w-full h-full object-cover" alt="" />
+                      ? <LazyImage src={activeThread.other_photo} className="w-full h-full object-cover" alt="" />
                       : <div className="w-full h-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-sm font-bold text-white">{(activeThread?.other_name?.[0] || '?').toUpperCase()}</div>}
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5">

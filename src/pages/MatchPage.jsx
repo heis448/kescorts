@@ -6,6 +6,10 @@ import api from '../utils/api'
 import useAuthStore from '../store/authStore'
 import BlueTick from '../components/ui/BlueTick'
 import PreferencesModal from '../components/match/PreferencesModal'
+import ErrorState from '../components/ui/ErrorState'
+import { reportError } from '../utils/reportError'
+import Seo from '../components/Seo'
+import LazyImage from '../components/ui/LazyImage'
 
 const PREF_KEY = 'match_guest_prefs'
 
@@ -45,7 +49,7 @@ function MatchCard({ profile }) {
     >
       <Link to={`/match/${profile.uuid}`} className="block relative aspect-[3/4] bg-dark-700 overflow-hidden group">
         {profile.cover_photo ? (
-          <img src={profile.cover_photo} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <LazyImage src={profile.cover_photo} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-700 to-dark-800">
             <Image size={32} className="text-gray-600" />
@@ -119,6 +123,7 @@ export default function MatchPage() {
   const [q, setQ]                   = useState('')
   const [profiles, setProfiles]     = useState([])
   const [loading, setLoading]       = useState(true)
+  const [error, setError]         = useState(false)
   const [page, setPage]             = useState(1)
   const [hasMore, setHasMore]       = useState(false)
   const [showPrefs, setShowPrefs]   = useState(false)
@@ -131,7 +136,7 @@ export default function MatchPage() {
       api.get('/match/preferences').then(r => {
         if (r.data) { setPrefs(r.data); }
         else setShowPrefs(true) // first time — show form
-      }).catch(() => {})
+      }).catch(e => reportError(e, 'Could not load your preferences'))
     } else {
       const stored = localStorage.getItem(PREF_KEY)
       if (stored) { try { setPrefs(JSON.parse(stored)) } catch {} }
@@ -152,6 +157,7 @@ export default function MatchPage() {
 
   const fetchProfiles = useCallback(async (currentTab, query, pg, currentPrefs) => {
     setLoading(true)
+    setError(false)
     try {
       const params = new URLSearchParams({ page: pg, limit: 20 })
       if (currentTab !== 'all' && currentTab !== 'for_you') params.set('type', currentTab)
@@ -174,7 +180,10 @@ export default function MatchPage() {
       if (pg === 1) setProfiles(list)
       else setProfiles(prev => [...prev, ...list])
       setHasMore(list.length === 20)
-    } catch {}
+    } catch (e) {
+      setError(true)
+      reportError(e, 'Could not load matches')
+    }
     setLoading(false)
   }, [user])
 
@@ -196,6 +205,7 @@ export default function MatchPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 pb-16">
+      <Seo title="Find Your Match | KenyanEscorts" description="Browse verified and random partners across Kenya and set your preferences for personalised matches." path="/match" />
       {/* Hero */}
       <div className="bg-gradient-to-b from-dark-800 to-dark-950 border-b border-dark-700 px-4 pt-8 pb-6">
         <div className="max-w-5xl mx-auto">
@@ -272,6 +282,8 @@ export default function MatchPage() {
               </div>
             ))}
           </div>
+        ) : error && profiles.length === 0 ? (
+          <ErrorState message="We couldn't load matches." onRetry={() => fetchProfiles(tab, q, 1, prefs)} />
         ) : profiles.length === 0 ? (
           <div className="text-center py-20 text-gray-500 space-y-3">
             <Heart size={32} className="mx-auto opacity-30" />

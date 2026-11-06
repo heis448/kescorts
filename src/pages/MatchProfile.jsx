@@ -8,9 +8,11 @@ import {
 import { AnimatePresence as AP } from 'framer-motion'
 import toast from 'react-hot-toast'
 import api from '../utils/api'
+import { reportError } from '../utils/reportError'
 import useAuthStore from '../store/authStore'
 import BlueTick from '../components/ui/BlueTick'
 import { MediaLightbox } from '../components/ui/MediaGallery'
+import LazyImage from '../components/ui/LazyImage'
 
 const normalizePhone = (phone) => {
   let p = String(phone).replace(/[\s\-\+]/g, '')
@@ -294,7 +296,7 @@ export default function MatchProfile() {
             if (rs.revealed) setRevealed({ phone: rs.phone, whatsapp: rs.whatsapp })
           }
         }
-      } catch {}
+      } catch (e) { reportError(e, 'Could not load this profile') }
       setLoading(false)
     }
     load()
@@ -335,7 +337,7 @@ export default function MatchProfile() {
               {media[currentSlide]?.media_type === 'video' ? (
                 <video src={media[currentSlide].url} className="w-full h-full object-cover" muted playsInline />
               ) : (
-                <img src={media[currentSlide]?.url} alt={profile.name} className="w-full h-full object-cover" />
+                <LazyImage src={media[currentSlide]?.url} alt={profile.name} className="w-full h-full object-cover" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-dark-900/60 via-transparent to-transparent" />
             </div>
@@ -384,7 +386,7 @@ export default function MatchProfile() {
                   >
                     {m.media_type === 'video'
                       ? <video src={m.url} className="w-full h-full object-cover" muted />
-                      : <img src={m.url} alt="" className="w-full h-full object-cover" />}
+                      : <LazyImage src={m.url} alt="" className="w-full h-full object-cover" />}
                   </button>
                 ))}
               </div>

@@ -6,6 +6,7 @@ import { format, formatDistanceToNow } from 'date-fns'
 import api from '../utils/api'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
+import LazyImage from '../components/ui/LazyImage'
 
 export default function BlogPost() {
   const { slug }    = useParams()
@@ -85,7 +86,7 @@ export default function BlogPost() {
 
       {/* Cover */}
       {post.cover_url && (
-        <img src={post.cover_url} alt={post.title} className="w-full h-64 sm:h-80 object-cover rounded-2xl mb-6" />
+        <LazyImage src={post.cover_url} alt={post.title} className="w-full h-64 sm:h-80 object-cover rounded-2xl mb-6" />
       )}
 
       {/* Header */}
@@ -95,7 +96,7 @@ export default function BlogPost() {
       <div className="flex items-center gap-3 mb-6 pb-6 border-b border-dark-700">
         <Link to={`/escort/${post.author_uuid}`}>
           <div className="w-10 h-10 rounded-full bg-dark-600 overflow-hidden">
-            {post.author_avatar && <img src={post.author_avatar} className="w-full h-full object-cover" />}
+            {post.author_avatar && <LazyImage src={post.author_avatar} className="w-full h-full object-cover" />}
           </div>
         </Link>
         <div>
@@ -162,7 +163,7 @@ export default function BlogPost() {
             <div key={c.id} className="card p-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-dark-600 overflow-hidden flex-shrink-0">
-                  {c.author_avatar && <img src={c.author_avatar} className="w-full h-full object-cover" />}
+                  {c.author_avatar && <LazyImage src={c.author_avatar} className="w-full h-full object-cover" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -190,7 +191,7 @@ export default function BlogPost() {
                   {c.replies?.map(reply => (
                     <div key={reply.id} className="flex items-start gap-2 mt-3 pl-3 border-l border-dark-600">
                       <div className="w-6 h-6 rounded-full bg-dark-600 overflow-hidden flex-shrink-0">
-                        {reply.author_avatar && <img src={reply.author_avatar} className="w-full h-full object-cover" />}
+                        {reply.author_avatar && <LazyImage src={reply.author_avatar} className="w-full h-full object-cover" />}
                       </div>
                       <div>
                         <span className="text-xs font-medium text-white">{reply.author_name || 'User'}</span>

@@ -59,6 +59,7 @@ export default function Register() {
         </button>
 
         <div className="text-center mb-8">
+          <img src="/logo.jpg" alt="Kenya Escorts" className="w-36 mx-auto mb-4 mix-blend-screen select-none" draggable="false" />
           <h1 className="font-display font-bold text-3xl text-white mb-2">Create Account</h1>
           <p className="text-gray-500">Join Kenya Escorts today</p>
         </div>

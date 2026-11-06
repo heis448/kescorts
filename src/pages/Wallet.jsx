@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import api from '../utils/api'
+import { reportError } from '../utils/reportError'
 import useAuthStore from '../store/authStore'
 import MpesaModal from '../components/ui/MpesaModal'
 import toast from 'react-hot-toast'
@@ -33,12 +34,12 @@ export default function Wallet() {
       setData(r.data)
       setWallet(r.data.wallet)
       setStars(r.data.stars)
-    }).catch(() => {})
+    }).catch(e => reportError(e, 'Could not load your wallet'))
   }
 
   useEffect(() => {
     fetchData()
-    api.get('/wallet/stars/packages').then(r => setPackages(r.data)).catch(() => {})
+    api.get('/wallet/stars/packages').then(r => setPackages(r.data)).catch(e => reportError(e, 'Could not load star packages'))
   }, [])
 
   const rate       = data.stars?.rate || 0.5
@@ -51,7 +52,7 @@ export default function Wallet() {
     setLoading(true)
     try {
       await api.post('/wallet/stars/buy-wallet', { package_id: selectedPkg.id })
-      toast.success(`${selectedPkg.stars + selectedPkg.bonus_stars} stars added!`)
+      toast.success(`${selectedPkg.stars + selectedPkg.bonus_stars + (selectedPkg.first_purchase_bonus || 0)} stars added!`)
       fetchData()
       setModal(null)
       setSelectedPkg(null)
@@ -243,6 +244,11 @@ export default function Wallet() {
           {!isEscort && (
           <div>
             <h3 className="text-sm font-semibold text-gray-400 mb-3">Star Packages</h3>
+            {packages.some(p => p.first_purchase_bonus > 0) && (
+              <div className="mb-3 rounded-xl border border-pink-500/30 bg-pink-500/10 px-3 py-2 text-sm text-pink-200">
+                🎁 <b>First purchase offer:</b> get extra bonus stars on your first star purchase!
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {packages.map(p => (
                 <button key={p.id} onClick={() => { setSelectedPkg(p); setModal('buy-stars') }}
@@ -253,9 +259,10 @@ export default function Wallet() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-white text-sm">{p.name}</p>
-                      <p className="text-amber-400 font-mono font-bold">⭐ {(p.stars + p.bonus_stars).toLocaleString()}
+                      <p className="text-amber-400 font-mono font-bold">⭐ {(p.stars + p.bonus_stars + (p.first_purchase_bonus || 0)).toLocaleString()}
                         {p.bonus_stars > 0 && <span className="text-xs text-green-400 ml-1">+{p.bonus_stars} bonus</span>}
                       </p>
+                      {p.first_purchase_bonus > 0 && <p className="text-xs text-pink-300 mt-0.5">🎁 includes +{p.first_purchase_bonus} first-purchase bonus</p>}
                     </div>
                     <p className="font-mono font-bold text-white">KSh {p.price_kes}</p>
                   </div>
@@ -353,9 +360,10 @@ export default function Wallet() {
                   }`}>
                   <div className="text-left">
                     <p className="font-medium text-white text-sm">{p.name}</p>
-                    <p className="text-amber-400 text-sm font-mono">⭐ {p.stars + p.bonus_stars}
+                    <p className="text-amber-400 text-sm font-mono">⭐ {p.stars + p.bonus_stars + (p.first_purchase_bonus || 0)}
                       {p.bonus_stars > 0 && <span className="text-xs text-green-400 ml-1">+{p.bonus_stars} bonus</span>}
                     </p>
+                    {p.first_purchase_bonus > 0 && <p className="text-xs text-pink-300">🎁 +{p.first_purchase_bonus} first-purchase bonus</p>}
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="font-mono font-bold text-white">KSh {p.price_kes}</p>

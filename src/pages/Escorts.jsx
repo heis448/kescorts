@@ -1,16 +1,26 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom'
 import { Loader2, Grid3X3, List } from 'lucide-react'
 import api from '../utils/api'
 import EscortCard from '../components/escort/EscortCard'
 import SearchFilters from '../components/escort/SearchFilters'
+import ErrorState from '../components/ui/ErrorState'
+import Seo from '../components/Seo'
+import { cityFromSlug, cityPath, COUNTIES } from '../utils/cities'
+import { Link } from 'react-router-dom'
+import { reportError } from '../utils/reportError'
+import LazyImage from '../components/ui/LazyImage'
 
 const AD_EVERY = 3 // inject a listing ad every 3 escort cards
 
 export default function Escorts() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { city } = useParams()
+  const navigate = useNavigate()
+  const cityName = city ? cityFromSlug(city) : ''
   const [escorts, setEscorts]   = useState([])
   const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState(false)
   const [page, setPage]         = useState(1)
   const [hasMore, setHasMore]   = useState(true)
   const [view, setView]         = useState('grid')
@@ -18,7 +28,7 @@ export default function Escorts() {
   const [listingAds, setListingAds]   = useState([])
 
   const [filters, setFilters] = useState({
-    county:      searchParams.get('county') || '',
+    county:      searchParams.get('county') || cityName,
     q:           searchParams.get('q') || '',
     gender:      '',
     nationality: '',
@@ -35,6 +45,7 @@ export default function Escorts() {
 
   const fetchEscorts = useCallback(async (f = filters, p = 1) => {
     setLoading(true)
+    setError(false)
     try {
       const params = new URLSearchParams()
       Object.entries(f).forEach(([k, v]) => { if (v) params.set(k, v) })
@@ -44,21 +55,24 @@ export default function Escorts() {
       if (p === 1) setEscorts(data)
       else setEscorts(prev => [...prev, ...data])
       setHasMore(data.length === 20)
-    } catch {}
+    } catch (e) {
+      setError(true)
+      reportError(e, 'Could not load escorts')
+    }
     setLoading(false)
   }, [])
 
   // Sync filters from URL params when navigating from outside (e.g. browse by location)
   useEffect(() => {
     const newFilters = {
-      county: searchParams.get('county') || '',
+      county: searchParams.get('county') || cityName,
       q:      searchParams.get('q') || '',
     }
     setFilters(prev => {
       const changed = Object.keys(newFilters).some(k => newFilters[k] !== prev[k])
       return changed ? { ...prev, ...newFilters } : prev
     })
-  }, [searchParams.toString()])
+  }, [searchParams.toString(), cityName])
 
   useEffect(() => {
     setPage(1)
@@ -69,7 +83,9 @@ export default function Escorts() {
     setFilters(f)
     const params = new URLSearchParams()
     Object.entries(f).forEach(([k, v]) => { if (v) params.set(k, v) })
-    setSearchParams(params)
+    // Leaving a city landing page → continue on the general listing with the chosen filters
+    if (city) navigate(`/escorts?${params}`)
+    else setSearchParams(params)
   }
 
   const loadMore = () => {
@@ -80,9 +96,16 @@ export default function Escorts() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 page-enter">
+      <Seo
+        title={cityName ? `Escorts in ${cityName} | KenyanEscorts` : 'Browse Escorts in Kenya | KenyanEscorts'}
+        description={cityName
+          ? `Browse verified escort profiles in ${cityName}, Kenya. See photos, rates and availability, and chat directly.`
+          : 'Browse escort profiles across Kenya — Nairobi, Mombasa, Kisumu, Nakuru and more.'}
+        path={cityName ? cityPath(cityName) : '/escorts'}
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display font-bold text-3xl text-white">Escorts</h1>
+          <h1 className="font-display font-bold text-3xl text-white">{cityName ? `Escorts in ${cityName}` : 'Escorts'}</h1>
           <p className="text-gray-500 text-sm mt-1">{escorts.length} profiles found</p>
         </div>
         <div className="flex gap-1 bg-dark-800 border border-dark-600 rounded-lg p-1">
@@ -111,7 +134,7 @@ export default function Escorts() {
                   {media ? (
                     media.type === 'video'
                       ? <video src={media.url} className="w-full h-32 object-cover" autoPlay={ad.autoplay} muted loop playsInline />
-                      : <img src={media.url} alt={ad.title} className="w-full h-32 object-cover group-hover:opacity-90 transition-opacity" />
+                      : <LazyImage src={media.url} alt={ad.title} className="w-full h-32 object-cover group-hover:opacity-90 transition-opacity" />
                   ) : (
                     <div className="w-full h-32 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
                       <p className="text-white text-sm font-bold px-3 text-center">{ad.title}</p>
@@ -133,6 +156,8 @@ export default function Escorts() {
             <div className="flex items-center justify-center py-20">
               <Loader2 size={32} className="text-brand-500 animate-spin" />
             </div>
+          ) : error && escorts.length === 0 ? (
+            <ErrorState message="We couldn't load escorts." onRetry={() => fetchEscorts(filters, 1)} />
           ) : escorts.length === 0 ? (
             <div className="text-center py-20 text-gray-500">
               <p className="text-lg">No escorts found</p>
@@ -161,7 +186,7 @@ export default function Escorts() {
                         {media ? (
                           media.type === 'video'
                             ? <video src={media.url} className="w-full aspect-[3/4] object-cover" autoPlay={ad.autoplay} muted loop playsInline />
-                            : <img src={media.url} alt={ad.title} className="w-full aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity" />
+                            : <LazyImage src={media.url} alt={ad.title} className="w-full aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity" />
                         ) : (
                           <div className="w-full aspect-[3/4] bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
                             <p className="text-white text-sm font-bold px-3 text-center">{ad.title}</p>

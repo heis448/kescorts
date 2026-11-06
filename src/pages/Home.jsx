@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, MapPin, ArrowRight, Star, Shield, Zap, BookOpen, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import api from "../utils/api"
+import { reportError } from '../utils/reportError'
 import { getSocket } from '../utils/socket'
 import StoryViewer, { StoryRing } from "../components/ui/StoryViewer"
 import LazyImage from '../components/ui/LazyImage'
 import CardSlider from '../components/ui/CardSlider'
 import EscortCard from '../components/escort/EscortCard'
+import Seo from '../components/Seo'
 
 const COUNTIES = ['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Machakos','Nyeri','Meru','Kisii','Malindi','Lamu']
 
@@ -260,7 +262,7 @@ function HomeContent() {
   const navigate = useNavigate()
 
   const fetchAll = () => {
-    api.get('/search?limit=20').then(r => { setFeatured(Array.isArray(r.data) ? r.data : []); setLoading(false) }).catch(() => setLoading(false))
+    api.get('/search?limit=20').then(r => { setFeatured(Array.isArray(r.data) ? r.data : []); setLoading(false) }).catch(e => { setLoading(false); reportError(e, 'Could not load escorts') })
     api.get('/search/online').then(r => setOnline(Array.isArray(r.data) ? r.data : [])).catch(() => {})
     api.get('/search/ads').then(r => setAds(Array.isArray(r.data) ? r.data : [])).catch(() => {})
     api.get('/stories').then(r => setStories(Array.isArray(r.data) ? r.data : [])).catch(() => {})
@@ -305,6 +307,12 @@ function HomeContent() {
 
   return (
     <div className="page-enter">
+      <Seo
+        title="KenyanEscorts — Find Escorts in Nairobi, Mombasa, Kisumu & More"
+        description="Browse escort profiles across Kenya. Filter by city, chat directly and find your match."
+        path="/"
+        jsonLd={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'KenyanEscorts', url: 'https://kenyaescorts.vercel.app' }}
+      />
 
       {/* Announcements shown after hero */}
 
@@ -368,7 +376,7 @@ function HomeContent() {
         <div className="flex flex-wrap gap-2">
           {COUNTIES.map((c, i) => (
             <motion.div key={c} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}>
-              <Link to={`/escorts?county=${c}`}
+              <Link to={`/escorts-in/${c.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                 className="flex items-center gap-1.5 px-4 py-2 bg-dark-800 hover:bg-brand-600 border border-dark-600 hover:border-brand-500 rounded-full text-sm text-gray-400 hover:text-white transition-all duration-200">
                 <MapPin size={12} />{c}
               </Link>
@@ -396,7 +404,7 @@ function HomeContent() {
                 className="flex-shrink-0 flex flex-col items-center gap-2 group">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-green-500">
                   {e.primary_photo
-                    ? <img src={e.primary_photo} alt={e.name} className="w-full h-full object-cover" />
+                    ? <LazyImage src={e.primary_photo} alt={e.name} className="w-full h-full object-cover" />
                     : <div className="w-full h-full bg-dark-600" />}
                   <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 border-2 border-dark-900 rounded-full" />
                 </div>
@@ -518,7 +526,7 @@ function HomeContent() {
               <Link key={post.id} to={`/blog/${post.slug}`}
                 className="bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden hover:border-brand-600/40 transition-all group">
                 {post.cover_url ? (
-                  <img src={post.cover_url} alt={post.title} className="w-full h-36 object-cover group-hover:opacity-90 transition-opacity" />
+                  <LazyImage src={post.cover_url} alt={post.title} className="w-full h-36 object-cover group-hover:opacity-90 transition-opacity" />
                 ) : (
                   <div className="w-full h-36 bg-dark-700 flex items-center justify-center">
                     <BookOpen size={24} className="text-gray-600" />

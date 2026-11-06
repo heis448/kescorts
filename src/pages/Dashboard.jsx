@@ -7,13 +7,15 @@ import {
   ToggleLeft, ToggleRight, Loader2, Menu, X,
   MessageCircle, LogOut, LayoutDashboard, Bot,
   Star, TrendingUp, Heart, BookOpen, Plus, Edit2,
-  Trash2, Globe, Lock, Image as ImageIcon, Link2, Upload, Shield, CheckCircle, Bell
+  Trash2, Globe, Lock, Image as ImageIcon, Link2, Upload, Shield, CheckCircle, Bell, Rocket
 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { format } from 'date-fns'
 import useAuthStore from '../store/authStore'
 import api from '../utils/api'
 import toast from 'react-hot-toast'
+import LazyImage from '../components/ui/LazyImage'
+import BoostTab from '../components/dashboard/BoostTab'
 
 const SERVICES = ['GFE','BJ','Raw BJ','Rimming','3 Some','Anal','Massage','Dinner Date','Travel Companion','Lesbian Show','COB','CIM']
 const COUNTIES  = ['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Machakos','Nyeri','Meru']
@@ -25,6 +27,7 @@ const ESCORT_NAV = [
   { id: 'photos',         label: 'Photos',         icon: Camera },
   { id: 'blog',           label: 'My Blog',        icon: BookOpen },
   { id: 'stories',        label: 'My Stories',     icon: ImageIcon },
+  { id: 'boost',          label: 'Boost Listing',  icon: Rocket },
   { id: 'membership',     label: 'Membership',     icon: Crown,         href: '/membership' },
   { id: 'wallet',         label: 'Wallet',         icon: Wallet,        href: '/wallet' },
   { id: 'chat',           label: 'Messages',       icon: MessageCircle, href: '/chat' },
@@ -114,7 +117,8 @@ export default function Dashboard() {
   const [loadingFavs, setLoadingFavs] = useState(false)
 
   const isEscort = user?.role === 'escort'
-  const NAV = isEscort ? ESCORT_NAV : CLIENT_NAV
+  const aiAllowed = !!membership?.ai_eligible   // top two tiers only
+  const NAV = isEscort ? ESCORT_NAV.filter(n => n.id !== 'ai' || aiAllowed) : CLIENT_NAV
 
   // ── Fetch data on mount ───────────────────────────────────────
   useEffect(() => {
@@ -569,7 +573,7 @@ export default function Dashboard() {
                 <div className="bg-dark-800 border border-dark-700 rounded-2xl p-4 flex items-center gap-4">
                   <div className="relative w-16 h-16 rounded-full overflow-hidden bg-dark-700 flex-shrink-0 border-2 border-dark-600">
                     {clientPhotos.find(p => p.is_primary) || clientPhotos[0] ? (
-                      <img src={(clientPhotos.find(p => p.is_primary) || clientPhotos[0]).url} className="w-full h-full object-cover" />
+                      <LazyImage src={(clientPhotos.find(p => p.is_primary) || clientPhotos[0]).url} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <User size={24} className="text-gray-500" />
@@ -873,7 +877,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
                   {photos.map(p => (
                     <div key={p.id} className="relative aspect-square rounded-xl overflow-hidden group">
-                      <img src={p.url} className="w-full h-full object-cover" />
+                      <LazyImage src={p.url} className="w-full h-full object-cover" />
                       {p.is_primary && (
                         <span className="absolute top-1.5 left-1.5 bg-brand-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
                           Profile pic
@@ -906,7 +910,17 @@ export default function Dashboard() {
           )}
 
           {/* ══ BLOG TAB (escort) ═════════════════════════════════════ */}
-          {activeTab === 'ai' && isEscort && (
+          {activeTab === 'boost' && isEscort && <BoostTab />}
+
+          {activeTab === 'ai' && isEscort && !aiAllowed && (
+            <div className="max-w-lg bg-dark-800 border border-dark-600 rounded-2xl p-6 text-center space-y-3">
+              <p className="text-3xl">🤖</p>
+              <h2 className="text-lg font-bold text-white">AI Assistant is a premium feature</h2>
+              <p className="text-sm text-gray-400">Available on our top two membership tiers.</p>
+              <Link to="/membership" className="btn-primary inline-flex text-sm py-2">Upgrade Membership</Link>
+            </div>
+          )}
+          {activeTab === 'ai' && isEscort && aiAllowed && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-lg">
           <div>
             <h2 className="text-xl font-bold text-white mb-1">🤖 AI Auto-Reply</h2>
@@ -1001,7 +1015,7 @@ export default function Dashboard() {
                   {blogPosts.map(post => (
                     <div key={post.id} className="bg-dark-800 border border-dark-700 rounded-2xl p-4 flex items-center gap-4">
                       {post.cover_url && (
-                        <img src={post.cover_url} alt={post.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                        <LazyImage src={post.cover_url} alt={post.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -1190,7 +1204,7 @@ export default function Dashboard() {
                     {myStories.map(s => (
                       <div key={s.id} className="relative rounded-xl overflow-hidden aspect-[9/16] bg-dark-700 group">
                         {s.type === 'image'
-                          ? <img src={s.url} className="w-full h-full object-cover" />
+                          ? <LazyImage src={s.url} className="w-full h-full object-cover" />
                           : <video src={s.url} className="w-full h-full object-cover" muted autoPlay loop poster={s.thumbnail} />
                         }
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -1235,7 +1249,7 @@ export default function Dashboard() {
                     <div key={f.fav_id} className="bg-dark-800 border border-dark-700 rounded-2xl p-4 flex items-center gap-3">
                       <Link to={`/escort/${f.uuid}`} className="flex-shrink-0">
                         <div className="w-14 h-14 rounded-xl overflow-hidden bg-dark-600 relative">
-                          {f.primary_photo && <img src={f.primary_photo} className="w-full h-full object-cover" />}
+                          {f.primary_photo && <LazyImage src={f.primary_photo} className="w-full h-full object-cover" />}
                           {f.is_online && <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-green-400 border border-dark-900 rounded-full" />}
                         </div>
                       </Link>
@@ -1355,7 +1369,7 @@ export default function Dashboard() {
                     <Link key={post.id} to={`/blog/${post.slug}`}
                       className="bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden hover:border-brand-600/40 transition-colors group">
                       {post.cover_url && (
-                        <img src={post.cover_url} alt={post.title} className="w-full h-36 object-cover group-hover:opacity-90 transition-opacity" />
+                        <LazyImage src={post.cover_url} alt={post.title} className="w-full h-36 object-cover group-hover:opacity-90 transition-opacity" />
                       )}
                       <div className="p-4">
                         <p className="text-sm font-semibold text-white line-clamp-2 group-hover:text-brand-300 transition-colors">{post.title}</p>

@@ -9,6 +9,7 @@ import useAuthStore from '../store/authStore'
 import MediaGallery from '../components/ui/MediaGallery'
 import StoryViewer, { StoryRing } from '../components/ui/StoryViewer'
 import toast from 'react-hot-toast'
+import Seo from '../components/Seo'
 
 const normalizePhone = (phone) => {
   let p = String(phone).replace(/[\s\-\+]/g, '')
@@ -136,6 +137,12 @@ export default function EscortProfile() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 page-enter">
+      <Seo
+        title={`${escort.name || 'Escort'}${escort.city || escort.county ? ' in ' + (escort.city || escort.county) : ''} | KenyanEscorts`}
+        description={(escort.bio || `View ${escort.name || 'this'} profile on KenyanEscorts.`).replace(/\s+/g, ' ').slice(0, 155)}
+        path={`/escort/${uuid}`}
+        image={photos[0]?.url}
+      />
       <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
         <ChevronLeft size={16} /> Back
       </button>

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { Heart, MessageCircle, Eye, Search, Loader2, BookOpen } from 'lucide-react'
 import { format } from 'date-fns'
 import api from '../utils/api'
+import LazyImage from '../components/ui/LazyImage'
 
 export default function BlogPage() {
   const [posts, setPosts]     = useState([])
@@ -68,7 +69,7 @@ export default function BlogPage() {
             >
               <Link to={`/blog/${post.slug}`} className="card overflow-hidden block group hover:border-brand-600/50 transition-all">
                 {post.cover_url ? (
-                  <img src={post.cover_url} alt={post.title} className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <LazyImage src={post.cover_url} alt={post.title} className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="w-full h-44 bg-gradient-to-br from-dark-700 to-dark-600 flex items-center justify-center">
                     <BookOpen size={32} className="text-gray-600" />
@@ -78,7 +79,7 @@ export default function BlogPage() {
                   {/* Author */}
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-6 h-6 rounded-full bg-dark-600 overflow-hidden flex-shrink-0">
-                      {post.author_avatar && <img src={post.author_avatar} className="w-full h-full object-cover" />}
+                      {post.author_avatar && <LazyImage src={post.author_avatar} className="w-full h-full object-cover" />}
                     </div>
                     <Link to={`/escort/${post.author_uuid}`} onClick={e => e.stopPropagation()} className="text-xs text-brand-400 hover:text-brand-300 transition-colors">
                       {post.author_name || 'Escort'}

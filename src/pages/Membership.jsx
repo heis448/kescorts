@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Crown, Check, Zap } from 'lucide-react'
 import api from '../utils/api'
+import { reportError } from '../utils/reportError'
 import useAuthStore from '../store/authStore'
 import MpesaModal from '../components/ui/MpesaModal'
 import toast from 'react-hot-toast'
@@ -33,7 +34,7 @@ export default function Membership() {
   const { membership, fetchMe } = useAuthStore()
 
   useEffect(() => {
-    api.get('/membership/tiers').then(r => setTiers(r.data)).catch(() => {})
+    api.get('/membership/tiers').then(r => setTiers(r.data)).catch(e => reportError(e, 'Could not load membership plans'))
   }, [])
 
   const handleBuy = (tier) => {
