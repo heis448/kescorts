@@ -45,7 +45,7 @@ export default function AdminLayout() {
       {/* Logo */}
       <div className={`flex items-center border-b border-white/10 ${collapsed && !isMobile ? 'justify-center px-3 py-5' : 'gap-3 px-5 py-5'}`}>
         <img
-          src="https://files.catbox.moe/1yhxuh.jpg"
+          src="/logo-mark.png"
           alt="KenyaEscorts"
           className="w-9 h-9 rounded-xl object-cover flex-shrink-0 shadow-lg shadow-brand-900/40"
         />

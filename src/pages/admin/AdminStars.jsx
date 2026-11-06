@@ -165,6 +165,9 @@ export default function AdminStars() {
                 { key: 'stars_to_kes_rate',      label: 'Stars → KSh Rate',               type: 'number', desc: 'KSh value of 1 star (e.g. 0.5)' },
                 { key: 'min_cashout_stars',      label: 'Minimum Cashout (stars)',        type: 'number', desc: 'Min stars to request withdrawal' },
                 { key: 'referral_bonus_stars',   label: 'Referral Bonus (stars)',         type: 'number', desc: 'Stars for referring a friend' },
+                { key: 'boost_price_kes',        label: 'Listing Boost Price (KSh)',      type: 'number', desc: 'What an escort pays for one boost' },
+                { key: 'boost_hours',            label: 'Boost Duration (hours)',         type: 'number', desc: 'Hours of top placement per boost' },
+                { key: 'stars_first_bonus_pct',  label: 'First-Purchase Bonus (%)',       type: 'number', desc: 'Extra stars on a client\'s first purchase (0 = off)' },
               ].map(({ key, label, type, desc }) => (
                 <div key={key}>
                   <label className="text-xs text-gray-400 mb-1 block font-medium">{label}</label>
