@@ -1,5 +1,10 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/sitemap.xml",         "destination": "/api/sitemap" },
+    { "source": "/escort/:id",          "destination": "/api/seo?type=escort&id=:id" },
+    { "source": "/escorts-in/:id",      "destination": "/api/seo?type=city&id=:id" },
+    { "source": "/(.*)",                "destination": "/index.html" }
+  ],
   "build": {
     "env": {
       "VITE_API_URL": "https://otf.makamesco-tech.co.ke/kescorts/api",
