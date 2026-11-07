@@ -8,7 +8,7 @@
   "build": {
     "env": {
       "VITE_API_URL": "https://otf.makamesco-tech.co.ke/kescorts/api",
-      "VITE_SOCKET_URL": "https://otf.makamesco-tech.co.ke/kescorts"
+      "VITE_SOCKET_URL": "https://of.makamesco-tech.co.ke/kescorts"
     }
   }
 }
