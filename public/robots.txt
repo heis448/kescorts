@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /chat
+Disallow: /wallet
+Disallow: /membership
+
+Sitemap: https://escorts.anonotf.co.ke/sitemap.xml
