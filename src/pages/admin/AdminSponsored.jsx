@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, Edit2, X, Upload, Phone, MapPin, Link2, Eye, EyeOff, Image } from 'lucide-react'
 import api from '../../utils/api'
+import { compressImage } from '../../utils/compressImage'
 import toast from 'react-hot-toast'
 
 const EMPTY = { name: '', description: '', phone: '', location: '', services: '', link_url: '', is_active: true }
@@ -57,7 +58,7 @@ export default function AdminSponsored() {
         setUploading(true)
         for (const file of files) {
           const fd = new FormData()
-          fd.append('file', file)
+          fd.append('file', await compressImage(file))
           await api.post(`/admin/sponsored/${saved.id}/media`, fd).catch(err => {
             console.error('Media upload failed:', err.message)
           })

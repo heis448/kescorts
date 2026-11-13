@@ -16,6 +16,7 @@ import api from '../utils/api'
 import toast from 'react-hot-toast'
 import LazyImage from '../components/ui/LazyImage'
 import BoostTab from '../components/dashboard/BoostTab'
+import { compressImage } from '../utils/compressImage'
 
 const SERVICES = ['GFE','BJ','Raw BJ','Rimming','3 Some','Anal','Massage','Dinner Date','Travel Companion','Lesbian Show','COB','CIM']
 const COUNTIES  = ['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Machakos','Nyeri','Meru']
@@ -217,7 +218,8 @@ export default function Dashboard() {
     accept: { 'image/*': [] }, maxFiles: 4,
     onDrop: async (files) => {
       const form = new FormData()
-      files.forEach(f => form.append('photos', f))
+      const small = await Promise.all(files.map(f => compressImage(f)))
+      small.forEach(f => form.append('photos', f))
       try {
         const { data } = await api.post('/profile/photos', form, { headers: { 'Content-Type': 'multipart/form-data' } })
         setPhotos(p => [...p, ...data])
@@ -252,7 +254,7 @@ export default function Dashboard() {
     if (!file) return
     setUploadingClientPhoto(true)
     const form = new FormData()
-    form.append('photos', file)
+    form.append('photos', await compressImage(file))
     try {
       await api.post('/profile/photos', form, { headers: { 'Content-Type': 'multipart/form-data' } })
       const r = await api.get('/profile/me/photos')
@@ -275,7 +277,7 @@ export default function Dashboard() {
 
     setUploadingVerification(true)
     const form = new FormData()
-    form.append('photo', file)
+    form.append('photo', await compressImage(file))
     Object.entries(verificationForm).forEach(([k, v]) => form.append(k, v ?? ''))
     try {
       const { data } = await api.post('/verification', form, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -322,7 +324,7 @@ export default function Dashboard() {
       form.append('is_published', blogForm.is_published)
       const tagsArr = blogForm.tags.split(',').map(t => t.trim()).filter(Boolean)
       tagsArr.forEach(t => form.append('tags[]', t))
-      if (blogCoverFile) form.append('cover', blogCoverFile)
+      if (blogCoverFile) form.append('cover', await compressImage(blogCoverFile))
       else if (blogCoverUrl) form.append('cover_url', blogCoverUrl)
 
       if (editingPost) {
@@ -368,7 +370,7 @@ export default function Dashboard() {
     try {
       const form = new FormData()
       if (storySource === 'upload') {
-        form.append('file', storyFile)
+        form.append('file', await compressImage(storyFile))
         form.append('type', storyType)
         form.append('source', 'upload')
       } else {

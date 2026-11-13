@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, Link, X, Play, Image, Loader2, Plus } from 'lucide-react'
 import api from '../../utils/api'
+import { compressImage } from '../../utils/compressImage'
 import toast from 'react-hot-toast'
 
 // items: [{ type, url, public_id, thumbnail, source, position }]
@@ -33,7 +34,7 @@ export default function MediaUploader({ items = [], onChange, maxImages = 10, ma
 
       try {
         const form = new FormData()
-        form.append('file', file)
+        form.append('file', isVideo ? file : await compressImage(file))
         const { data } = await api.post('/media/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })
         onChange([...items, { ...data, position: items.length }])
       } catch (err) {

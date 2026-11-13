@@ -37,6 +37,7 @@ import AdminTransactions  from './pages/admin/AdminTransactions'
 import AdminAnnouncements from './pages/admin/AdminAnnouncements'
 import AdminStars         from './pages/admin/AdminStars'
 import AdminMatch        from './pages/admin/AdminMatch'
+import AdminMedia        from './pages/admin/AdminMedia'
 
 // ── Route guards ──────────────────────────────────────────────────
 const ProtectedRoute = ({ children, role }) => {
@@ -132,6 +133,7 @@ export default function App() {
           <Route path="announcements" element={<AdminAnnouncements />} />
           <Route path="stars"         element={<AdminStars />} />
           <Route path="match"         element={<AdminMatch />} />
+          <Route path="media"         element={<AdminMedia />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

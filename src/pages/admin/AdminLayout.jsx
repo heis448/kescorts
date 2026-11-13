@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Crown, Megaphone, ShieldCheck,
   ArrowLeftRight, Newspaper, LogOut, ChevronLeft, Menu, X,
-  Bell, Settings, TrendingUp, Star, Heart
+  Bell, Settings, TrendingUp, Star, Heart, Image as ImageIcon
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 
@@ -14,6 +14,7 @@ const NAV = [
   { to: '/admin/tiers',         label: 'Membership Tiers',icon: Crown },
   { to: '/admin/stars',         label: 'Stars & Wallet',  icon: Star },
   { to: '/admin/match',         label: 'Find Your Match', icon: Heart },
+  { to: '/admin/media',         label: 'Media',           icon: ImageIcon },
   { to: '/admin/ads',           label: 'Advertisements',  icon: Megaphone },
   { to: '/admin/sponsored',     label: 'Sponsored',       icon: TrendingUp },
   { to: '/admin/verifications', label: 'Verifications',   icon: ShieldCheck },
