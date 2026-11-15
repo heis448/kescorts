@@ -3,7 +3,7 @@ import { Crown, Plus, Pencil, Trash2, X, Loader2, Save } from 'lucide-react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 
-const EMPTY = { name:'', price_3d:'', price_7d:'', price_15d:'', price_30d:'', features:'', position:'bottom', max_photos:4 }
+const EMPTY = { name:'', price_3d:'', price_7d:'', price_15d:'', price_30d:'', features:'', position:'bottom', max_photos:4, ai_access:false }
 
 export default function AdminTiers() {
   const [tiers, setTiers]   = useState([])
@@ -33,6 +33,7 @@ export default function AdminTiers() {
       price_15d:   Number(form.price_15d),
       price_30d:   Number(form.price_30d),
       max_photos:  Number(form.max_photos),
+      ai_access:   !!form.ai_access,
     }
     try {
       if (editing) {
@@ -80,6 +81,7 @@ export default function AdminTiers() {
                 <Crown size={18} className="text-amber-400 mb-2" />
                 <h3 className="font-bold text-white">{t.name}</h3>
                 <span className="text-xs text-gray-500 capitalize">{POSITION_LABELS[t.position]}</span>
+                {t.ai_access && <span className="block mt-1 text-[11px] text-emerald-400">🤖 AI Assistant access</span>}
               </div>
               <div className="flex gap-1">
                 <button onClick={() => openEdit(t)} className="p-1.5 text-gray-500 hover:text-white hover:bg-dark-600 rounded-lg transition-colors">
@@ -167,6 +169,15 @@ export default function AdminTiers() {
                   onChange={e => setForm({...form,features:e.target.value})}
                   placeholder="Top section listing, Up to 12 photos, Chat enabled" />
               </div>
+
+              <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-dark-600 p-3">
+                <input type="checkbox" className="mt-0.5 w-4 h-4 accent-brand-500" checked={!!form.ai_access}
+                  onChange={e => setForm({...form, ai_access: e.target.checked})} />
+                <span>
+                  <span className="block text-sm text-white font-medium">AI Assistant access</span>
+                  <span className="block text-xs text-gray-500">Escorts on this tier see the AI tab and can use AI auto-reply.</span>
+                </span>
+              </label>
             </div>
 
             <div className="flex gap-2 mt-5">

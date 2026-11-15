@@ -55,6 +55,7 @@ export default function Dashboard() {
   const [aiPersonality, setAiPersonality] = useState('friendly')
   const [aiIntro, setAiIntro]       = useState('')
   const [aiDelay, setAiDelay]       = useState(5)
+  const [aiReplyOnline, setAiReplyOnline] = useState(false)
   const [savingAi, setSavingAi]     = useState(false)
   const [stats, setStats]           = useState(null)
 
@@ -141,6 +142,7 @@ export default function Dashboard() {
         setAiPersonality(p.ai_personality||'friendly')
         setAiIntro(p.ai_intro||'')
         setAiDelay(p.ai_delay_seconds||5)
+        setAiReplyOnline(p.ai_reply_online||false)
       }).catch(()=>{})
       api.get('/profile/me/stats').then(r => setStats(r.data)).catch(()=>{})
       api.get('/blog/my').then(r => setBlogPosts(r.data||[])).catch(()=>{})
@@ -172,7 +174,7 @@ export default function Dashboard() {
   const saveProfile = async () => {
     setSaving(true)
     try {
-      await api.put('/profile', profile)
+      await api.put('/profile', { ...profile, ...aiPayload() })   // always send the CURRENT AI settings, never a stale copy
       toast.success('Profile saved!')
     } catch (err) { toast.error(err.response?.data?.error || 'Save failed') }
     setSaving(false)
@@ -182,19 +184,31 @@ export default function Dashboard() {
     ...p, services: p.services.includes(s) ? p.services.filter(x=>x!==s) : [...p.services, s]
   }))
 
+  // Current AI settings (with optional overrides) — used by every save so nothing is ever overwritten with an old value
+  const aiPayload = (o = {}) => ({
+    ai_enabled: aiEnabled, ai_personality: aiPersonality, ai_intro: aiIntro,
+    ai_delay_seconds: aiDelay, ai_reply_online: aiReplyOnline, ...o,
+  })
+
   const saveAiSettings = async () => {
     setSavingAi(true)
     try {
-      await api.put('/profile', {
-        ...profile,
-        ai_enabled: aiEnabled,
-        ai_personality: aiPersonality,
-        ai_intro: aiIntro,
-        ai_delay_seconds: aiDelay
-      })
-      toast.success('AI settings saved!')
-    } catch { toast.error('Failed to save') }
+      const { data } = await api.put('/profile', { ...profile, ...aiPayload() })
+      if (data?.ai_locked) { setAiEnabled(false); toast.error('AI Assistant needs one of the top two membership tiers') }
+      else toast.success('AI settings saved!')
+    } catch (e) { toast.error(e.response?.data?.error || 'Failed to save') }
     setSavingAi(false)
+  }
+
+  // Switches save immediately — no separate "Save" press needed for on/off
+  const toggleAi = async (key, setter, next) => {
+    setter(next)
+    try {
+      const body = key === 'ai_enabled' ? aiPayload({ ai_enabled: next }) : aiPayload({ ai_reply_online: next })
+      const { data } = await api.put('/profile', { ...profile, ...body })
+      if (key === 'ai_enabled' && data?.ai_locked) { setter(false); toast.error('AI Assistant needs one of the top two membership tiers'); return }
+      toast.success(key === 'ai_enabled' ? (next ? '🤖 AI auto-reply is ON' : 'AI auto-reply is OFF') : (next ? 'AI will also reply while you are online' : 'AI will only reply when you are offline'))
+    } catch (e) { setter(!next); toast.error(e.response?.data?.error || 'Could not update') }
   }
 
   const toggleOnline = async () => {
@@ -933,13 +947,25 @@ export default function Dashboard() {
           <div className="card p-4 flex items-center justify-between">
             <div>
               <p className="font-semibold text-white">AI Auto-Reply</p>
-              <p className="text-xs text-gray-500 mt-0.5">{aiEnabled ? 'On — AI is replying to clients for you' : 'Off — clients wait for your manual reply'}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{aiEnabled ? 'On — AI replies to clients when you are away' : 'Off — clients wait for your manual reply'}</p>
             </div>
-            <button onClick={() => setAiEnabled(v => !v)}
+            <button onClick={() => toggleAi('ai_enabled', setAiEnabled, !aiEnabled)}
               className={`relative w-12 h-6 rounded-full transition-colors ${aiEnabled ? 'bg-brand-600' : 'bg-dark-600'}`}>
               <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${aiEnabled ? 'translate-x-7' : 'translate-x-1'}`} />
             </button>
           </div>
+
+          <div className="card p-4 flex items-center justify-between">
+            <div className="pr-4">
+              <p className="font-semibold text-white">Also reply while I'm online</p>
+              <p className="text-xs text-gray-500 mt-0.5">By default AI only replies when you are not on the site. Turn this on and it also steps in if you don't answer first.</p>
+            </div>
+            <button onClick={() => toggleAi('ai_reply_online', setAiReplyOnline, !aiReplyOnline)}
+              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${aiReplyOnline ? 'bg-brand-600' : 'bg-dark-600'}`}>
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${aiReplyOnline ? 'translate-x-7' : 'translate-x-1'}`} />
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 px-1">The reply arrives after your chosen delay plus a few seconds of "typing", so it is never instant.</p>
 
           {/* Personality */}
           <div className="card p-4 space-y-3">
