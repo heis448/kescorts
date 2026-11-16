@@ -129,7 +129,7 @@ function RevealModal({ profile, onClose, onRevealed }) {
               {/* Guest: need phone first */}
               {!user && (
                 <div className="mb-3">
-                  <label className="text-xs text-gray-400 mb-1 block">Your phone (for M-Pesa payment)</label>
+                  <label className="text-xs text-gray-400 mb-1 block">M-Pesa number to pay with</label>
                   <input
                     type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                     placeholder="07XX XXX XXX"
@@ -187,7 +187,7 @@ function RevealModal({ profile, onClose, onRevealed }) {
 
               {!user && (
                 <p className="text-center text-xs text-gray-500">
-                  <Link to="/login" className="text-brand-400 hover:underline">Login</Link> to pay with stars
+                  Already have stars? <Link to="/login" className="text-brand-400 hover:underline">Log in</Link> to use them
                 </p>
               )}
             </div>
@@ -562,16 +562,25 @@ export default function MatchProfile() {
                   <p className="text-white font-semibold mb-1">Contact Hidden</p>
                   <p className="text-gray-500 text-sm">Reveal to get WhatsApp & phone number</p>
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-dark-800 rounded-xl p-3 text-center border border-dark-700">
-                    <p className="text-xs text-gray-500">M-Pesa</p>
-                    <p className="text-white font-bold">KSh {profile.reveal_price_kes?.toLocaleString()}</p>
+                {user ? (
+                  /* Logged in: can pay with M-Pesa or stars */
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-dark-800 rounded-xl p-3 text-center border border-dark-700">
+                      <p className="text-xs text-gray-500">M-Pesa</p>
+                      <p className="text-white font-bold">KSh {profile.reveal_price_kes?.toLocaleString()}</p>
+                    </div>
+                    <div className="flex-1 bg-dark-800 rounded-xl p-3 text-center border border-dark-700">
+                      <p className="text-xs text-gray-500">Stars</p>
+                      <p className="text-white font-bold">⭐ {profile.reveal_price_stars}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 bg-dark-800 rounded-xl p-3 text-center border border-dark-700">
-                    <p className="text-xs text-gray-500">Stars</p>
-                    <p className="text-white font-bold">⭐ {profile.reveal_price_stars}</p>
+                ) : (
+                  /* Guest: one price, one way to pay — no account needed */
+                  <div className="bg-dark-800 rounded-xl p-3 text-center border border-dark-700">
+                    <p className="text-white font-bold text-lg">KSh {profile.reveal_price_kes?.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Pay once with M-Pesa · no account needed</p>
                   </div>
-                </div>
+                )}
                 <button
                   onClick={() => setShowReveal(true)}
                   className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors flex items-center justify-center gap-2"

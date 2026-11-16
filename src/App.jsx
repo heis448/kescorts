@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { useEffect } from 'react'
 import useAuthStore from './store/authStore'
@@ -7,6 +7,9 @@ import useAuthStore from './store/authStore'
 import Navbar  from './components/layout/Navbar'
 import NotifyPrompt from './components/ui/NotifyPrompt'
 import InstallPrompt from './components/ui/InstallPrompt'
+import BottomNav from './components/layout/BottomNav'
+import { NotificationsProvider } from './hooks/useNotifications.jsx'
+import { motion } from 'framer-motion'
 import Footer  from './components/layout/Footer'
 
 // Pages
@@ -55,13 +58,19 @@ const ProtectedRoute = ({ children, role }) => {
 
 // ── Layouts ───────────────────────────────────────────────────────
 // Standard layout — Navbar + Footer (for public pages)
-const PublicLayout = ({ children }) => (
-  <div className="min-h-screen flex flex-col">
-    <Navbar />
-    <main className="flex-1">{children}</main>
-    <Footer />
-  </div>
-)
+const PublicLayout = ({ children }) => {
+  const { pathname } = useLocation()
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      {/* Re-keyed per page so every navigation fades/slides in like an app screen */}
+      <motion.main key={pathname} className="flex-1" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
+        {children}
+      </motion.main>
+      <Footer />
+    </div>
+  )
+}
 
 // ── App ───────────────────────────────────────────────────────────
 export default function App() {
@@ -78,6 +87,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <NotificationsProvider>
       <Toaster
         position="top-center"
         toastOptions={{
@@ -138,6 +148,8 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <BottomNav />
+      </NotificationsProvider>
     </BrowserRouter>
   )
 }

@@ -160,8 +160,10 @@ export default function AdminStars() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {[
                 { key: 'welcome_stars',          label: 'Welcome Stars (new clients)',    type: 'number', desc: 'Free stars on signup' },
-                { key: 'stars_per_message',      label: 'Stars per Message (client pays)',type: 'number', desc: 'Cost per message sent' },
-                { key: 'stars_earned_per_reply', label: 'Stars Earned per Reply (escort)',type: 'number', desc: 'Escort earns per reply' },
+                { key: 'stars_per_message',      label: 'Stars per Message (client pays)',type: 'number', desc: 'Price of one charge (also the chat-unlock fee)' },
+                { key: 'chat_chars_per_charge',  label: 'Characters per Charge',          type: 'number', desc: 'One charge covers this many characters. 200 = 5 stars up to 200 chars, 10 up to 400…' },
+                { key: 'chat_max_message_length',label: 'Max Message Length (characters)',type: 'number', desc: 'Longest message a client can send' },
+                { key: 'chat_escort_share_pct',  label: 'Escort Share (%)',               type: 'number', desc: 'Share of the purchased stars a client pays that the escort earns (bonus-star messages earn nothing)' },
                 { key: 'stars_to_kes_rate',      label: 'Stars → KSh Rate',               type: 'number', desc: 'KSh value of 1 star (e.g. 0.5)' },
                 { key: 'min_cashout_stars',      label: 'Minimum Cashout (stars)',        type: 'number', desc: 'Min stars to request withdrawal' },
                 { key: 'referral_bonus_stars',   label: 'Referral Bonus (stars)',         type: 'number', desc: 'Stars for referring a friend' },

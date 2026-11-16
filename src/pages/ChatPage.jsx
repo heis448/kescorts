@@ -93,8 +93,14 @@ export default function ChatPage() {
   const socket          = getSocket()
 
   const starsBalance  = starsInfo?.wallet?.balance || 0
-  const starsPerMsg   = starsInfo?.stars_per_message || 5
+  const starsPerMsg   = starsInfo?.stars_per_message || 5            // price of one charge
+  const charsPerCharge = starsInfo?.chars_per_charge || 200           // characters covered by one charge
+  const maxLen        = starsInfo?.max_message_length || 600
   const isLocked      = isClient && starsBalance < starsPerMsg
+
+  // Live price of what's being typed: one charge per started block of characters (an emoji counts as 1)
+  const msgLen  = Array.from(text.trim()).length
+  const msgCost = isClient ? starsPerMsg * Math.max(1, Math.ceil(msgLen / charsPerCharge)) : 0
 
   // Active thread info
   const activeThread = threads.find(t => String(t.id) === String(active))
@@ -263,7 +269,7 @@ export default function ChatPage() {
   // ── Send message ──────────────────────────────────────────────
   const sendMessage = async () => {
     if (!text.trim() || !active || sending) return
-    if (isLocked) { setShowBuyStars(true); return }
+    if (isLocked || (isClient && starsBalance < msgCost)) { setShowBuyStars(true); return }
 
     // Stop typing indicator
     stopTyping()
@@ -278,7 +284,7 @@ export default function ChatPage() {
       if (isClient) {
         setStarsInfo(prev => prev ? {
           ...prev,
-          wallet: { ...prev.wallet, balance: Math.max(0, prev.wallet.balance - starsPerMsg) }
+          wallet: { ...prev.wallet, balance: Math.max(0, prev.wallet.balance - (msg.stars_cost || msgCost)) }
         } : prev)
       }
     } catch (err) {
@@ -726,7 +732,8 @@ export default function ChatPage() {
                   <textarea
                     rows={1}
                     className="input flex-1 resize-none py-2.5 text-sm"
-                    placeholder={isClient ? `Type a message... (${starsPerMsg} ⭐)` : 'Type a message...'}
+                    maxLength={isClient ? maxLen : 2000}
+                    placeholder={isClient ? `Type a message... (${starsPerMsg} ⭐ per ${charsPerCharge} characters)` : 'Type a message...'}
                     value={text}
                     onChange={e => { setText(e.target.value); if (active) startTyping() }}
                     onKeyDown={handleKey}
@@ -736,6 +743,12 @@ export default function ChatPage() {
                     className="w-10 h-10 bg-brand-600 hover:bg-brand-500 disabled:opacity-40 rounded-xl flex items-center justify-center transition-colors flex-shrink-0">
                     {sending ? <Loader2 size={15} className="animate-spin text-white" /> : <Send size={15} className="text-white" />}
                   </button>
+                </div>
+              )}
+              {isClient && !isLocked && (
+                <div className="flex items-center justify-between px-1 pt-1 text-[11px]">
+                  <span className={starsBalance < msgCost ? 'text-red-400' : 'text-amber-400'}>⭐ {msgCost} {msgCost > starsPerMsg ? `(${Math.ceil(msgLen / charsPerCharge)} charges)` : ''}</span>
+                  <span className={msgLen > maxLen * 0.9 ? 'text-red-400' : 'text-gray-500'}>{msgLen}/{maxLen}</span>
                 </div>
               )}
             </div>
@@ -767,7 +780,7 @@ export default function ChatPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">Buy Stars</h3>
-                    <p className="text-xs text-gray-500">Each message costs {starsPerMsg} ⭐</p>
+                    <p className="text-xs text-gray-500">A message costs {starsPerMsg} ⭐ per {charsPerCharge} characters</p>
                   </div>
                 </div>
                 <button onClick={() => setShowBuyStars(false)} className="p-1.5 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg">

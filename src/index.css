@@ -16,12 +16,37 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* App-like touch behaviour */
+  a, button, [role='button'], label, select, summary {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;          /* no 300ms tap delay, no accidental double-tap zoom */
+  }
+  button, nav { -webkit-user-select: none; user-select: none; }
+  img { -webkit-touch-callout: none; }
+
+  /* Room for the mobile bottom tab bar (set by BottomNav only while it is showing) */
+  @media (max-width: 767px) {
+    body.has-bottom-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+    /* 16px stops iOS from zooming the page when a field is focused */
+    input, select, textarea { font-size: 16px !important; }
+  }
+
+  /* Installed app: no browser-style rubber-banding at the page edges */
+  @media (display-mode: standalone) {
+    html, body { overscroll-behavior-y: none; }
+  }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #111118; }
   ::-webkit-scrollbar-thumb { background: #3d3d52; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #ff2d4e; }
 
   ::selection { background: rgba(255,45,78,0.3); color: #fff; }
+}
+
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
 @layer components {

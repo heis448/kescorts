@@ -566,6 +566,21 @@ export default function Dashboard() {
           <Link to="/" className="text-xs text-gray-500 hover:text-white transition-colors hidden sm:block">← Back to site</Link>
         </header>
 
+        {/* Phones: swipeable section tabs, always one tap away */}
+        <div className="lg:hidden sticky top-14 z-20 bg-dark-900/90 backdrop-blur-xl border-b border-white/8">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar px-3 py-2">
+            {NAV.map(n => {
+              const Icon = n.icon
+              const on = !n.href && activeTab === n.id
+              const cls = `flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors active:scale-95 ${
+                on ? 'bg-brand-600 border-brand-500 text-white' : 'bg-dark-800 border-dark-600 text-gray-400'}`
+              return n.href
+                ? <Link key={n.id} to={n.href} className={cls}><Icon size={13} />{n.label}</Link>
+                : <button key={n.id} onClick={() => setActiveTab(n.id)} className={cls}><Icon size={13} />{n.label}</button>
+            })}
+          </div>
+        </div>
+
         {/* Content */}
         <main className="flex-1 overflow-auto p-4 sm:p-6">
 

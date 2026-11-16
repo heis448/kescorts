@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
 import api from '../utils/api'
 import { useNavigate } from 'react-router-dom'
@@ -131,7 +131,7 @@ const showToast = (emoji, title, body, onClick, avatar = null) => {
   )
 }
 
-export function useNotifications() {
+function useNotificationsState() {
   const { user, setUnreadNotifications } = useAuthStore()
   const navigate = useNavigate()
   const [notifications, setNotifications] = useState([])
@@ -215,4 +215,22 @@ export function useNotifications() {
     unreadMessages, setUnreadMessages,
     loading, fetchNotifications, markRead, markAllRead
   }
+}
+
+// ── One shared instance ─────────────────────────────────────────────────────
+// The hook above opens socket listeners (pop-ups, sounds). It must exist ONCE, otherwise every extra caller
+// (e.g. the mobile bottom bar) would duplicate every notification. Everything reads the same instance from here.
+const NotificationsContext = createContext(null)
+
+export function NotificationsProvider({ children }) {
+  const value = useNotificationsState()
+  return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>
+}
+
+const EMPTY = {
+  notifications: [], setNotifications: () => {}, unreadMessages: 0, setUnreadMessages: () => {},
+  loading: false, fetchNotifications: () => {}, markRead: () => {}, markAllRead: () => {},
+}
+export function useNotifications() {
+  return useContext(NotificationsContext) || EMPTY
 }
