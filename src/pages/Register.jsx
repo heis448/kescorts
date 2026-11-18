@@ -36,7 +36,7 @@ export default function Register() {
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setErrors({})
     const { confirmPassword, ...payload } = form
-    const res = await register(payload)
+    const res = await register({ ...payload, ref: localStorage.getItem('ke_ref') || undefined })
     if (res.success) { toast.success('Account created!'); navigate('/dashboard') }
     else toast.error(res.error)
   }

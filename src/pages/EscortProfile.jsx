@@ -10,6 +10,8 @@ import MediaGallery from '../components/ui/MediaGallery'
 import StoryViewer, { StoryRing } from '../components/ui/StoryViewer'
 import toast from 'react-hot-toast'
 import Seo from '../components/Seo'
+import ShareButton from '../components/ui/ShareButton'
+import { SITE } from '../utils/site'
 
 const normalizePhone = (phone) => {
   let p = String(phone).replace(/[\s\-\+]/g, '')
@@ -143,9 +145,12 @@ export default function EscortProfile() {
         path={`/escort/${uuid}`}
         image={photos[0]?.url}
       />
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
-        <ChevronLeft size={16} /> Back
-      </button>
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-white transition-colors">
+          <ChevronLeft size={16} /> Back
+        </button>
+        <ShareButton title={`${escort.name} on KenyanEscorts`} text={`Check out ${escort.name} on KenyanEscorts`} url={`${SITE}/escort/${uuid}`} />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 

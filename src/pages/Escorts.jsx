@@ -5,6 +5,8 @@ import api from '../utils/api'
 import EscortCard from '../components/escort/EscortCard'
 import SearchFilters from '../components/escort/SearchFilters'
 import ErrorState from '../components/ui/ErrorState'
+import { SkeletonGrid } from '../components/ui/Skeleton'
+import PullToRefresh from '../components/ui/PullToRefresh'
 import Seo from '../components/Seo'
 import { cityFromSlug, cityPath, COUNTIES } from '../utils/cities'
 import { Link } from 'react-router-dom'
@@ -95,6 +97,7 @@ export default function Escorts() {
   }
 
   return (
+    <PullToRefresh onRefresh={() => fetchEscorts(filters, 1)}>
     <div className="max-w-7xl mx-auto px-4 py-8 page-enter">
       <Seo
         title={cityName ? `Escorts in ${cityName} | KenyanEscorts` : 'Browse Escorts in Kenya | KenyanEscorts'}
@@ -153,9 +156,7 @@ export default function Escorts() {
         {/* Grid */}
         <div className="lg:col-span-3">
           {loading && escorts.length === 0 ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 size={32} className="text-brand-500 animate-spin" />
-            </div>
+            <SkeletonGrid count={8} />
           ) : error && escorts.length === 0 ? (
             <ErrorState message="We couldn't load escorts." onRetry={() => fetchEscorts(filters, 1)} />
           ) : escorts.length === 0 ? (
@@ -214,5 +215,6 @@ export default function Escorts() {
         </div>
       </div>
     </div>
+    </PullToRefresh>
   )
 }

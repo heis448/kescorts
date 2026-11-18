@@ -10,6 +10,8 @@ import LazyImage from '../components/ui/LazyImage'
 import CardSlider from '../components/ui/CardSlider'
 import EscortCard from '../components/escort/EscortCard'
 import Seo from '../components/Seo'
+import { SkeletonGrid } from '../components/ui/Skeleton'
+import PullToRefresh from '../components/ui/PullToRefresh'
 import { SITE } from '../utils/site'
 
 const COUNTIES = ['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Machakos','Nyeri','Meru','Kisii','Malindi','Lamu']
@@ -307,6 +309,7 @@ function HomeContent() {
   }
 
   return (
+    <PullToRefresh onRefresh={() => fetchAll()}>
     <div className="page-enter">
       <Seo
         title="KenyanEscorts — Find Escorts in Nairobi, Mombasa, Kisumu & More"
@@ -410,17 +413,7 @@ function HomeContent() {
           </Link>
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_,i) => (
-              <div key={i} className="rounded-2xl bg-dark-800 border border-dark-700 overflow-hidden animate-pulse">
-                <div className="aspect-[3/4] bg-dark-700" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3 bg-dark-600 rounded w-2/3" />
-                  <div className="h-3 bg-dark-600 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <SkeletonGrid count={8} />
         ) : featured.length === 0 ? (
           <div className="text-center py-16 text-gray-600">
             <p className="text-sm">No escorts listed yet</p>
@@ -574,6 +567,7 @@ function HomeContent() {
         <StoryViewer groups={stories} startGroupIndex={activeStory} onClose={() => setActiveStory(null)} />
       )}
     </div>
+    </PullToRefresh>
   )
 }
 

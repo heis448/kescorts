@@ -16,6 +16,8 @@ import api from '../utils/api'
 import toast from 'react-hot-toast'
 import LazyImage from '../components/ui/LazyImage'
 import BoostTab from '../components/dashboard/BoostTab'
+import CameraCapture from '../components/ui/CameraCapture'
+import InviteCard from '../components/ui/InviteCard'
 import { compressImage } from '../utils/compressImage'
 
 const SERVICES = ['GFE','BJ','Raw BJ','Rimming','3 Some','Anal','Massage','Dinner Date','Travel Companion','Lesbian Show','COB','CIM']
@@ -72,6 +74,7 @@ export default function Dashboard() {
   const [clientPhotos, setClientPhotos] = useState([])
   const [uploadingClientPhoto, setUploadingClientPhoto] = useState(false)
   const clientPhotoRef = useRef()
+  const [camera, setCamera] = useState(null)   // which upload the live camera is open for: gallery | story | verify | client
 
   // Verification (escort)
   const [verification, setVerification] = useState(null)
@@ -121,6 +124,22 @@ export default function Dashboard() {
   const isEscort = user?.role === 'escort'
   const aiAllowed = !!membership?.ai_eligible   // top two tiers only
   const NAV = isEscort ? ESCORT_NAV.filter(n => n.id !== 'ai' || aiAllowed) : CLIENT_NAV
+
+  // Phones: swipe left/right on the content to move to the next/previous section
+  const swipeStart = useRef(null)
+  const tabIds = NAV.filter(n => !n.href).map(n => n.id)
+  const onSwipeStart = (e) => { const t = e.touches[0]; swipeStart.current = { x: t.clientX, y: t.clientY, target: e.target } }
+  const onSwipeEnd = (e) => {
+    const s = swipeStart.current; swipeStart.current = null
+    if (!s || window.innerWidth >= 1024) return
+    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return                 // not a clear sideways swipe
+    if (s.target.closest?.('input,textarea,select,video,canvas,[data-no-swipe],.overflow-x-auto,.no-scrollbar')) return   // sliders, tables, fields keep their own gestures
+    const i = tabIds.indexOf(activeTab); if (i < 0) return
+    const next = tabIds[i + (dx < 0 ? 1 : -1)]
+    if (next) { setActiveTab(next); try { navigator.vibrate?.(6) } catch {} }
+  }
+  useEffect(() => { document.querySelector('[data-tab-chip="on"]')?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }) }, [activeTab])
 
   // ── Fetch data on mount ───────────────────────────────────────
   useEffect(() => {
@@ -228,18 +247,18 @@ export default function Dashboard() {
   }
 
   // ── Photo handlers ───────────────────────────────────────────
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': [] }, maxFiles: 4,
-    onDrop: async (files) => {
-      const form = new FormData()
-      const small = await Promise.all(files.map(f => compressImage(f)))
-      small.forEach(f => form.append('photos', f))
-      try {
-        const { data } = await api.post('/profile/photos', form, { headers: { 'Content-Type': 'multipart/form-data' } })
-        setPhotos(p => [...p, ...data])
-        toast.success('Photos uploaded!')
-      } catch (err) { toast.error(err.response?.data?.error || 'Upload failed') }
-    }
+  const uploadGalleryFiles = async (files) => {
+    const form = new FormData()
+    const small = await Promise.all(files.map(f => compressImage(f)))
+    small.forEach(f => form.append('photos', f))
+    try {
+      const { data } = await api.post('/profile/photos', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      setPhotos(p => [...p, ...data])
+      toast.success('Photos uploaded!')
+    } catch (err) { toast.error(err.response?.data?.error || 'Upload failed') }
+  }
+  const { getRootProps, getInputProps, open: openGalleryPicker } = useDropzone({
+    accept: { 'image/*': [] }, maxFiles: 4, onDrop: uploadGalleryFiles
   })
 
   const deletePhoto = async (id) => {
@@ -264,7 +283,8 @@ export default function Dashboard() {
   }
 
   // ── Client profile photo handlers ──────────────────────────
-  const handleClientPhotoUpload = async (e) => {    const file = e.target.files?.[0]
+  const handleClientPhotoUpload = (e) => uploadClientPhotoFile(e.target.files?.[0])
+  const uploadClientPhotoFile = async (file) => {
     if (!file) return
     setUploadingClientPhoto(true)
     const form = new FormData()
@@ -280,8 +300,13 @@ export default function Dashboard() {
   }
 
   // ── Verification handler ───────────────────────────────────
-  const handleVerificationUpload = async (e) => {
-    const file = e.target.files?.[0]
+  // Verification needs a LIVE camera photo (no gallery): open the camera only once the form passes the age check
+  const openVerificationCamera = () => {
+    if (verificationForm.age && parseInt(verificationForm.age) < 18) { toast.error('You must be 18 or older to be verified.'); return }
+    setCamera('verify')
+  }
+  const handleVerificationUpload = (e) => submitVerificationFile(e.target.files?.[0])
+  const submitVerificationFile = async (file) => {
     if (!file) return
 
     if (verificationForm.age && parseInt(verificationForm.age) < 18) {
@@ -369,8 +394,8 @@ export default function Dashboard() {
   }
 
   // ── Story handlers ───────────────────────────────────────────
-  const handleStoryFileSelect = (e) => {
-    const file = e.target.files[0]
+  const handleStoryFileSelect = (e) => applyStoryFile(e.target.files?.[0])
+  const applyStoryFile = (file) => {
     if (!file) return
     setStoryFile(file)
     setStoryType(file.type.startsWith('video/') ? 'video' : 'image')
@@ -576,13 +601,13 @@ export default function Dashboard() {
                 on ? 'bg-brand-600 border-brand-500 text-white' : 'bg-dark-800 border-dark-600 text-gray-400'}`
               return n.href
                 ? <Link key={n.id} to={n.href} className={cls}><Icon size={13} />{n.label}</Link>
-                : <button key={n.id} onClick={() => setActiveTab(n.id)} className={cls}><Icon size={13} />{n.label}</button>
+                : <button key={n.id} data-tab-chip={on ? 'on' : 'off'} onClick={() => setActiveTab(n.id)} className={cls}><Icon size={13} />{n.label}</button>
             })}
           </div>
         </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-auto p-4 sm:p-6" onTouchStart={onSwipeStart} onTouchEnd={onSwipeEnd}>
 
           {/* Inactive warning */}
           {isEscort && !user?.is_active && (
@@ -616,11 +641,15 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5">Visible to escorts in chat & reviews</p>
                   </div>
                   <input ref={clientPhotoRef} type="file" accept="image/*" className="hidden" onChange={handleClientPhotoUpload} />
-                  <button onClick={() => clientPhotoRef.current?.click()} disabled={uploadingClientPhoto}
-                    className="btn-primary text-sm py-2 px-4 flex items-center gap-1.5 flex-shrink-0">
-                    {uploadingClientPhoto ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
-                    {clientPhotos.length ? 'Change' : 'Upload'}
-                  </button>
+                  <div className="flex flex-col gap-1.5 flex-shrink-0">
+                    <button onClick={() => setCamera('client')} disabled={uploadingClientPhoto}
+                      className="btn-primary text-sm py-2 px-4 flex items-center justify-center gap-1.5">
+                      {uploadingClientPhoto ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                      Take selfie
+                    </button>
+                    <button onClick={() => clientPhotoRef.current?.click()} disabled={uploadingClientPhoto}
+                      className="text-xs text-gray-400 hover:text-white py-1">{clientPhotos.length ? 'Choose another' : 'Choose from gallery'}</button>
+                  </div>
                 </div>
               )}
 
@@ -646,6 +675,8 @@ export default function Dashboard() {
                   </motion.div>
                 ))}
               </div>
+
+              <InviteCard />
 
               {/* Quick actions */}
               <div>
@@ -881,13 +912,12 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      <input ref={verificationFileRef} type="file" accept="image/*" className="hidden" onChange={handleVerificationUpload} />
-                      <button onClick={() => verificationFileRef.current?.click()} disabled={uploadingVerification}
+                      <button onClick={openVerificationCamera} disabled={uploadingVerification}
                         className="btn-secondary text-sm py-2 px-4 flex items-center gap-1.5">
-                        {uploadingVerification ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                        {uploadingVerification ? 'Uploading...' : 'Upload Verification Photo'}
+                        {uploadingVerification ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                        {uploadingVerification ? 'Uploading...' : 'Take Verification Selfie'}
                       </button>
-                      <p className="text-[11px] text-gray-600">Fill in the details above, then upload your verification photo to submit. Must be 18+.</p>
+                      <p className="text-[11px] text-gray-600">Fill in the details above, then take a live selfie with your camera to submit. Photos from your gallery are not accepted. Must be 18+.</p>
                     </div>
                   )}
                 </div>
@@ -928,6 +958,11 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ))}
+                  <button type="button" onClick={() => setCamera('gallery')}
+                    className="aspect-square border-2 border-dashed border-dark-500 hover:border-brand-500 rounded-xl flex flex-col items-center justify-center transition-colors group">
+                    <Camera size={24} className="text-gray-600 group-hover:text-brand-400 transition-colors mb-2" />
+                    <p className="text-xs text-gray-600 group-hover:text-brand-400 transition-colors text-center px-2">Take Photo</p>
+                  </button>
                   <div {...getRootProps()}
                     className="aspect-square border-2 border-dashed border-dark-500 hover:border-brand-500 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors group bg-dark-700/30 hover:bg-brand-500/5">
                     <input {...getInputProps()} />
@@ -1205,11 +1240,20 @@ export default function Dashboard() {
                         </button>
                       </div>
                     ) : (
-                      <button onClick={() => storyFileRef.current?.click()}
-                        className="w-full h-32 border-2 border-dashed border-dark-500 hover:border-brand-500 rounded-xl flex flex-col items-center justify-center transition-colors group">
-                        <Upload size={24} className="text-gray-600 group-hover:text-brand-400 mb-1 transition-colors" />
-                        <p className="text-xs text-gray-600 group-hover:text-brand-400 transition-colors">Click to select image or video</p>
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => setCamera('story')}
+                          className="h-32 border-2 border-dashed border-dark-500 hover:border-brand-500 rounded-xl flex flex-col items-center justify-center transition-colors group">
+                          <Camera size={24} className="text-gray-600 group-hover:text-brand-400 mb-1 transition-colors" />
+                          <p className="text-xs text-gray-600 group-hover:text-brand-400 transition-colors">Camera</p>
+                          <p className="text-[10px] text-gray-700">photo or 15s video</p>
+                        </button>
+                        <button onClick={() => storyFileRef.current?.click()}
+                          className="h-32 border-2 border-dashed border-dark-500 hover:border-brand-500 rounded-xl flex flex-col items-center justify-center transition-colors group">
+                          <Upload size={24} className="text-gray-600 group-hover:text-brand-400 mb-1 transition-colors" />
+                          <p className="text-xs text-gray-600 group-hover:text-brand-400 transition-colors">Gallery</p>
+                          <p className="text-[10px] text-gray-700">choose a file</p>
+                        </button>
+                      </div>
                     )}
                     <input ref={storyFileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleStoryFileSelect} />
                   </div>
@@ -1432,6 +1476,17 @@ export default function Dashboard() {
 
         </main>
       </div>
+
+      {/* Live camera (one instance, configured per upload purpose) */}
+      {(() => {
+        const cfg = {
+          gallery: { mode: 'photo', facing: 'environment', title: 'Take a photo', onCapture: f => uploadGalleryFiles([f]), onUnavailable: () => openGalleryPicker() },
+          story:   { mode: 'both',  facing: 'environment', title: 'New story', maxSeconds: 15, onCapture: f => applyStoryFile(f), onUnavailable: () => storyFileRef.current?.click() },
+          verify:  { mode: 'photo', facing: 'user', guide: 'face', liveOnly: true, title: 'Verification selfie', onCapture: f => submitVerificationFile(f) },
+          client:  { mode: 'photo', facing: 'user', guide: 'face', title: 'Profile selfie', onCapture: f => uploadClientPhotoFile(f), onUnavailable: () => clientPhotoRef.current?.click() },
+        }[camera]
+        return <CameraCapture open={!!camera} onClose={() => setCamera(null)} {...(cfg || {})} />
+      })()}
     </div>
   )
 }

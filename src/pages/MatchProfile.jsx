@@ -9,6 +9,9 @@ import { AnimatePresence as AP } from 'framer-motion'
 import toast from 'react-hot-toast'
 import api from '../utils/api'
 import { reportError } from '../utils/reportError'
+import ShareButton from '../components/ui/ShareButton'
+import { SITE } from '../utils/site'
+import Sheet from '../components/ui/Sheet'
 import useAuthStore from '../store/authStore'
 import BlueTick from '../components/ui/BlueTick'
 import { MediaLightbox } from '../components/ui/MediaGallery'
@@ -96,15 +99,7 @@ function RevealModal({ profile, onClose, onRevealed }) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4"
-      onClick={e => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
-        className="w-full max-w-sm bg-dark-800 border border-dark-600 rounded-2xl overflow-hidden"
-      >
+    <Sheet onClose={onClose} className="max-w-sm" backdrop="bg-black/80">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-dark-700">
           <div>
@@ -257,9 +252,7 @@ function RevealModal({ profile, onClose, onRevealed }) {
             </div>
           )}
 
-        </div>
-      </motion.div>
-    </motion.div>
+        </div></Sheet>
   )
 }
 
@@ -320,10 +313,11 @@ export default function MatchProfile() {
       <div className="max-w-2xl mx-auto">
 
         {/* Back */}
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <Link to="/match" className="flex items-center gap-1 text-gray-400 hover:text-white text-sm transition-colors">
             <ChevronLeft size={16} /> Back to Match
           </Link>
+          <ShareButton title={`${profile.name} on KenyanEscorts`} text={`Take a look at ${profile.name} on KenyanEscorts`} url={`${SITE}/match/${profile.uuid || uuid}`} />
         </div>
 
         {/* Gallery */}

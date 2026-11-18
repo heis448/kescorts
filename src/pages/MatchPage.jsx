@@ -9,6 +9,8 @@ import PreferencesModal from '../components/match/PreferencesModal'
 import ErrorState from '../components/ui/ErrorState'
 import { reportError } from '../utils/reportError'
 import Seo from '../components/Seo'
+import { SkeletonGrid } from '../components/ui/Skeleton'
+import PullToRefresh from '../components/ui/PullToRefresh'
 import LazyImage from '../components/ui/LazyImage'
 
 const PREF_KEY = 'match_guest_prefs'
@@ -204,6 +206,7 @@ export default function MatchPage() {
   const hasPrefs = prefs && (prefs.county || prefs.min_age || prefs.interests?.length || prefs.max_budget)
 
   return (
+    <PullToRefresh onRefresh={() => fetchProfiles(tab, q, 1, prefs)}>
     <div className="min-h-screen bg-dark-950 pb-16">
       <Seo title="Find Your Match | KenyanEscorts" description="Browse verified and random partners across Kenya and set your preferences for personalised matches." path="/match" />
       {/* Hero */}
@@ -271,17 +274,7 @@ export default function MatchPage() {
       {/* Grid */}
       <div className="max-w-5xl mx-auto px-4 pt-6">
         {loading && profiles.length === 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="card animate-pulse">
-                <div className="aspect-[3/4] bg-dark-700 rounded" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3 bg-dark-700 rounded w-2/3" />
-                  <div className="h-3 bg-dark-700 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <SkeletonGrid count={8} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" />
         ) : error && profiles.length === 0 ? (
           <ErrorState message="We couldn't load matches." onRetry={() => fetchProfiles(tab, q, 1, prefs)} />
         ) : profiles.length === 0 ? (
@@ -321,5 +314,6 @@ export default function MatchPage() {
         )}
       </AnimatePresence>
     </div>
+    </PullToRefresh>
   )
 }

@@ -9,6 +9,9 @@ const KE_TZ = 'Africa/Nairobi'
 const fmt = (date, pattern) => format(utcToZonedTime(new Date(date), KE_TZ), pattern)
 import api from '../utils/api'
 import { reportError } from '../utils/reportError'
+import { ChatListSkeleton } from '../components/ui/Skeleton'
+import PullToRefresh from '../components/ui/PullToRefresh'
+import Sheet from '../components/ui/Sheet'
 import { getSocket } from '../utils/socket'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
@@ -126,6 +129,10 @@ export default function ChatPage() {
     })
   }
 
+  const [threadsLoading, setThreadsLoading] = useState(true)
+  const listRef = useRef(null)
+  const refreshThreads = () => api.get('/chat/threads').then(r => setThreads((r.data || []).map(t => ({ ...t, _online: t.other_online ?? false }))))
+
   // ── Load threads + stars ──────────────────────────────────────
   useEffect(() => {
     api.get('/chat/threads').then(r => {
@@ -134,7 +141,7 @@ export default function ChatPage() {
         _online: t.other_online ?? false
       }))
       setThreads(threads)
-    }).catch(e => reportError(e, 'Could not load your chats'))
+    }).catch(e => reportError(e, 'Could not load your chats')).finally(() => setThreadsLoading(false))
     // Clients see ALL escorts sorted by online first
     if (user?.role === 'client') {
       api.get('/search/online')
@@ -538,8 +545,11 @@ export default function ChatPage() {
               </button>
             )}
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {threads.length === 0 ? (
+          <PullToRefresh className="flex-1 min-h-0 flex flex-col" scrollRef={listRef} onRefresh={refreshThreads}>
+          <div ref={listRef} className="flex-1 overflow-y-auto">
+            {threadsLoading && threads.length === 0 ? (
+              <ChatListSkeleton />
+            ) : threads.length === 0 ? (
               <div className="flex items-center justify-center h-full text-gray-600 text-sm p-8 text-center">
                 <div>
                   <MessageCircle size={40} className="mx-auto mb-3 opacity-30" />
@@ -589,6 +599,7 @@ export default function ChatPage() {
               ))
             )}
           </div>
+          </PullToRefresh>
         </div>
 
         {/* ── Message area ── */}
@@ -766,12 +777,7 @@ export default function ChatPage() {
       {/* ===== BUY STARS POPUP ===== */}
       <AnimatePresence>
         {showBuyStars && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
-            onClick={() => setShowBuyStars(false)}>
-            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
-              className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
-              onClick={e => e.stopPropagation()}>
+          <Sheet onClose={() => setShowBuyStars(false)} className="max-w-md p-6 pt-2">
 
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -842,9 +848,7 @@ export default function ChatPage() {
                 <Link to="/wallet" className="btn-ghost w-full text-center text-sm" onClick={() => setShowBuyStars(false)}>
                   Manage Stars in Wallet →
                 </Link>
-              )}
-            </motion.div>
-          </motion.div>
+              )}</Sheet>
         )}
       </AnimatePresence>
     </div>

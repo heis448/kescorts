@@ -8,6 +8,7 @@ import Navbar  from './components/layout/Navbar'
 import NotifyPrompt from './components/ui/NotifyPrompt'
 import InstallPrompt from './components/ui/InstallPrompt'
 import BottomNav from './components/layout/BottomNav'
+import OfflineBanner from './components/ui/OfflineBanner'
 import { NotificationsProvider } from './hooks/useNotifications.jsx'
 import { motion } from 'framer-motion'
 import Footer  from './components/layout/Footer'
@@ -73,6 +74,12 @@ const PublicLayout = ({ children }) => {
 }
 
 // ── App ───────────────────────────────────────────────────────────
+// A friend's invite link (?ref=CODE) is remembered so signing up later still credits them
+try {
+  const ref = new URLSearchParams(window.location.search).get('ref')
+  if (ref && /^[A-Za-z0-9]{4,20}$/.test(ref)) localStorage.setItem('ke_ref', ref)
+} catch {}
+
 export default function App() {
   const { token, fetchMe } = useAuthStore()
 
@@ -95,6 +102,7 @@ export default function App() {
           success: { iconTheme: { primary: '#ff2d4e', secondary: '#fff' } }
         }}
       />
+      <OfflineBanner />
       <NotifyPrompt />
       <InstallPrompt />
       <Routes>

@@ -38,30 +38,25 @@ export default function EscortCard({ escort, index = 0 }) {
           <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-transparent to-transparent" />
 
           {/* Top badges */}
-          <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+          {/* Top badges: tier + ONE status (boosted beats new). Verified is shown as the blue tick by the name. */}
+          <div className="absolute top-2.5 left-2.5 right-8 sm:right-20 flex gap-1.5 flex-wrap">
             {tier && <span className={tier.cls}>{tier.label}</span>}
-            {escort.is_new && (
+            {escort.is_boosted ? (
+              <span className="flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm text-orange-400 text-xs px-2 py-0.5 rounded-full border border-orange-500/30">
+                🔥 Boosted
+              </span>
+            ) : escort.is_new && (
               <span className="flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30">
                 ✨ New
               </span>
             )}
-            {escort.is_boosted && (
-              <span className="flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm text-orange-400 text-xs px-2 py-0.5 rounded-full border border-orange-500/30">
-                🔥 Boosted
-              </span>
-            )}
-            {escort.is_verified && (
-              <span className="flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm text-blue-400 text-xs px-2 py-0.5 rounded-full border border-blue-500/30">
-                <BlueTick size={12} /> Verified
-              </span>
-            )}
           </div>
 
-          {/* Online indicator */}
+          {/* Online: just a dot on phones, dot + word on wider screens */}
           {escort.is_online && (
-            <div className="absolute top-3 right-3 flex items-center gap-1.5">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-xs text-green-400 font-medium">Online</span>
+            <div className="absolute top-3 right-3 flex items-center gap-1.5" title="Online now">
+              <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse ring-2 ring-dark-900/70" />
+              <span className="hidden sm:inline text-xs text-green-400 font-medium">Online</span>
             </div>
           )}
 

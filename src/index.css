@@ -45,6 +45,8 @@
 }
 
 @layer utilities {
+  .skeleton { background: linear-gradient(100deg, #1a1a24 30%, #262636 50%, #1a1a24 70%); background-size: 200% 100%; animation: shimmer 1.3s ease-in-out infinite; }
+  @keyframes shimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
   .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
 }

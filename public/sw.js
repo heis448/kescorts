@@ -1,9 +1,26 @@
 // Service worker: receives web push and opens the right page on tap.
-self.addEventListener('install', () => self.skipWaiting())
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()))
+// Only the offline page is stored on the phone. Everything else is always fetched fresh.
+const OFFLINE_CACHE = 'ke-offline-v2'
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(OFFLINE_CACHE).then(c => c.addAll(['/offline.html', '/logo-mark.png'])).then(() => self.skipWaiting()))
+})
+self.addEventListener('activate', (e) => {
+  e.waitUntil((async () => {
+    for (const k of await caches.keys()) if (k !== OFFLINE_CACHE) await caches.delete(k)
+    await self.clients.claim()
+  })())
+})
 
 // Present so browsers treat the site as an installable app. No caching: always fetches fresh from the network.
-self.addEventListener('fetch', () => {})
+// Opening a page with no connection → friendly offline page instead of the browser's error
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).catch(() => caches.match('/offline.html')))
+  } else if (new URL(event.request.url).pathname === '/logo-mark.png') {
+    // the offline page's logo: serve the stored copy so it shows with no connection
+    event.respondWith(caches.match('/logo-mark.png').then(hit => hit || fetch(event.request)))
+  }
+})
 
 self.addEventListener('push', (event) => {
   let data = {}
