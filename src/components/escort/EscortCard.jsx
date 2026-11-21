@@ -5,11 +5,13 @@ import LazyImage from '../ui/LazyImage'
 import BlueTick from '../ui/BlueTick'
 import CardSlider from '../ui/CardSlider'
 
+// Solid colours + a soft shadow: readable on bright AND dark photos (the old see-through chips vanished)
+const CHIP = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold leading-none shadow-md shadow-black/50'
 const TIER_BADGE = {
-  VIP:       { label: 'VIP',       cls: 'badge-vip' },
-  'Prime VIP': { label: 'Prime VIP', cls: 'badge bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30' },
-  Prime:     { label: 'Prime',     cls: 'badge-prime' },
-  Regular:   { label: 'Regular',   cls: 'badge bg-dark-500 text-gray-400 border border-dark-400' },
+  VIP:         { label: 'VIP',       cls: `${CHIP} bg-gradient-to-r from-amber-300 to-amber-500 text-black` },
+  'Prime VIP': { label: 'Prime VIP', cls: `${CHIP} bg-fuchsia-500 text-white` },
+  Prime:       { label: 'Prime',     cls: `${CHIP} bg-sky-500 text-white` },
+  Regular:     { label: 'Regular',   cls: `${CHIP} bg-black/75 text-white ring-1 ring-white/30` },
 }
 
 export default function EscortCard({ escort, index = 0 }) {
@@ -42,11 +44,11 @@ export default function EscortCard({ escort, index = 0 }) {
           <div className="absolute top-2.5 left-2.5 right-8 sm:right-20 flex gap-1.5 flex-wrap">
             {tier && <span className={tier.cls}>{tier.label}</span>}
             {escort.is_boosted ? (
-              <span className="flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm text-orange-400 text-xs px-2 py-0.5 rounded-full border border-orange-500/30">
+              <span className={`${CHIP} bg-orange-500 text-white`}>
                 🔥 Boosted
               </span>
             ) : escort.is_new && (
-              <span className="flex items-center gap-1 bg-dark-900/80 backdrop-blur-sm text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30">
+              <span className={`${CHIP} bg-emerald-500 text-white`}>
                 ✨ New
               </span>
             )}
@@ -86,7 +88,7 @@ export default function EscortCard({ escort, index = 0 }) {
             )}
           </div>
           {escort.services?.length > 0 && (
-            <span className="text-xs text-gray-600">{escort.services.length} services</span>
+            <span className="text-xs text-gray-600">{escort.services.length} {escort.services.length === 1 ? 'service' : 'services'}</span>
           )}
         </div>
       </Link>

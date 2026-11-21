@@ -27,9 +27,11 @@ export default {
         }
       },
       fontFamily: {
-        display: ['"Playfair Display"', 'Georgia', 'serif'],
-        body:    ['"DM Sans"', 'sans-serif'],
-        mono:    ['"DM Mono"', 'monospace'],
+        // One family everywhere (Inter, bundled with the app so it loads fast and never falls back to a serif)
+        display: ['"Inter Variable"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        body:    ['"Inter Variable"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans:    ['"Inter Variable"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono:    ['"Inter Variable"', 'system-ui', 'sans-serif'],   // numbers use tabular-nums (see index.css)
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

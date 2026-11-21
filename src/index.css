@@ -10,7 +10,9 @@
   body {
     background-color: #0a0a0f;
     color: #e8e8f0;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv11', 'ss03';   /* single-storey a, cleaner shapes */
+    -webkit-font-smoothing: antialiased;
     font-size: 15px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -45,6 +47,8 @@
 }
 
 @layer utilities {
+  .font-display { letter-spacing: -0.02em; }
+  .font-mono { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   .skeleton { background: linear-gradient(100deg, #1a1a24 30%, #262636 50%, #1a1a24 70%); background-size: 200% 100%; animation: shimmer 1.3s ease-in-out infinite; }
   @keyframes shimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
   .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }

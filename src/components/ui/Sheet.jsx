@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, useDragControls } from 'framer-motion'
 
 // A popup that slides up from the bottom on phones (drag the handle or swipe down to close)
@@ -14,7 +15,9 @@ export default function Sheet({ onClose, children, className = 'max-w-md', backd
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [onClose])
 
-  return (
+  // Rendered straight into <body>: a fixed popup inside an animating/transformed page element would be
+  // positioned relative to that element (far below the screen) instead of the screen.
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className={`fixed inset-0 ${backdrop} z-50 flex items-end sm:items-center justify-center sm:p-4`}
@@ -40,6 +43,7 @@ export default function Sheet({ onClose, children, className = 'max-w-md', backd
         </div>
         {children}
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   )
 }

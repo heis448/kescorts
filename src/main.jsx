@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import { registerSW } from './utils/push'
 import './utils/install'
+import '@fontsource-variable/inter'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
