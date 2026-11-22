@@ -53,33 +53,40 @@ export function AdCard({ ad }) {
   )
 }
 
-// Where things sit in the feed: a slot after the 6th profile, then after every 8 more.
-// Slots alternate Sponsored ↔ Ad (using whichever type exists). Never after the very last profile.
+// Where things sit in the feed.
+//  • Big list: first slot after the 6th profile, then after every 8 more, alternating Sponsored ↔ Ad.
+//  • Small list: the first slot moves up (after half the profiles) and anything not yet shown is added at the
+//    end, so a Sponsored card or an Ad is ALWAYS visible, however few profiles there are.
 export const FIRST_SLOT_AFTER = 6
 export const SLOT_EVERY = 8
 
 export function buildFeed(profiles, sponsored = [], ads = []) {
   const usableAds = ads.filter(a => mediaOf(a).length)
+  const n = profiles.length
+  const first = Math.min(FIRST_SLOT_AFTER, Math.max(1, Math.floor(n / 2)))
   const nodes = []
-  let slot = 0, si = 0, ai = 0
+  let slot = 0, si = 0, ai = 0, shownS = false, shownA = false
 
   const pick = () => {
     const order = slot++ % 2 === 0 ? ['s', 'a'] : ['a', 's']
     for (const t of order) {
-      if (t === 's' && sponsored.length) return { type: 's', item: sponsored[si++ % sponsored.length] }
-      if (t === 'a' && usableAds.length) return { type: 'a', item: usableAds[ai++ % usableAds.length] }
+      if (t === 's' && sponsored.length) { shownS = true; return { type: 's', item: sponsored[si++ % sponsored.length] } }
+      if (t === 'a' && usableAds.length) { shownA = true; return { type: 'a', item: usableAds[ai++ % usableAds.length] } }
     }
     return null
   }
 
   profiles.forEach((p, idx) => {
     nodes.push(<EscortCard key={p.uuid} escort={p} index={idx % 8} />)
-    const n = idx + 1
-    if (idx < profiles.length - 1 && n >= FIRST_SLOT_AFTER && (n - FIRST_SLOT_AFTER) % SLOT_EVERY === 0) {
+    const k = idx + 1
+    if (idx < n - 1 && k >= first && (k - first) % SLOT_EVERY === 0) {
       const got = pick()
-      if (got?.type === 's') nodes.push(<SponsoredCard key={`s-${n}`} s={got.item} />)
-      if (got?.type === 'a') nodes.push(<AdCard key={`a-${n}`} ad={got.item} />)
+      if (got?.type === 's') nodes.push(<SponsoredCard key={`s-${k}`} s={got.item} />)
+      if (got?.type === 'a') nodes.push(<AdCard key={`a-${k}`} ad={got.item} />)
     }
   })
+
+  if (sponsored.length && !shownS) nodes.push(<SponsoredCard key="s-end" s={sponsored[0]} />)
+  if (usableAds.length && !shownA) nodes.push(<AdCard key="a-end" ad={usableAds[0]} />)
   return nodes
 }

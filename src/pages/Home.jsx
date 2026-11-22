@@ -162,9 +162,9 @@ function HomeContent() {
     return [...first, ...extra].filter(e => !seen.has(e.uuid) && seen.add(e.uuid))
   }, [first, extra])
 
-  // VIP (featured tier) → the "Featured" row (only when there are at least 3, so it never looks empty)
+  // VIP (featured-tier) profiles → the "Featured" row, as soon as there is one
   const tierFeatured = all.filter(e => e.position === 'featured')
-  const rail = tierFeatured.length >= 3 ? tierFeatured.slice(0, 10) : []
+  const rail = tierFeatured.slice(0, 10)
   const railIds = new Set(rail.map(e => e.uuid))
   const rest = all.filter(e => !railIds.has(e.uuid))
   const feed = useMemo(() => buildFeed(rest, sponsored, ads), [rest.length, sponsored, ads]) // eslint-disable-line
@@ -184,6 +184,11 @@ function HomeContent() {
         <StoriesRow stories={stories} online={online} onOpenStory={setActiveStory} />
         <AnnouncementBar announcements={announcements} />
         <HomeSearch />
+        {user?.role === 'admin' && (
+          <p className="max-w-7xl mx-auto px-4 mt-3 text-[11px] text-gray-500" data-testid="admin-feed-info">
+            Admin view · profiles {all.length} · VIP in Featured row {rail.length}{rail.length === 0 ? ' (needs a VIP-tier escort with an active membership)' : ''} · boosted {all.filter(e => e.is_boosted).length} · active sponsored {sponsored.length} · ads {ads.length} · announcements {announcements.length}
+          </p>
+        )}
         <FeaturedRail items={rail} />
 
         {/* Discover: the main feed. Boosted profiles lead it; Sponsored cards and Ads sit between profiles */}
@@ -195,7 +200,7 @@ function HomeContent() {
 
           {loading ? (
             <SkeletonGrid count={8} className={GRID} />
-          ) : rest.length === 0 ? (
+          ) : feed.length === 0 ? (
             <div className="text-center py-14 text-gray-500">
               <p className="text-3xl mb-2">🔍</p>
               <p className="text-sm">No profiles yet. Check back soon.</p>
