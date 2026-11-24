@@ -15,6 +15,7 @@ import StoriesRow from '../components/home/StoriesRow'
 import AnnouncementBar from '../components/home/AnnouncementBar'
 import HomeSearch from '../components/home/HomeSearch'
 import FeaturedRail from '../components/home/FeaturedRail'
+import SponsoredRail from '../components/home/SponsoredRail'
 import { buildFeed } from '../components/home/FeedCards'
 
 const PAGE = 20
@@ -90,6 +91,7 @@ function HomeContent() {
   const [activeStory, setActiveStory]   = useState(null)
   const [blog, setBlog]                 = useState([])
   const [sponsored, setSponsored]       = useState([])
+  const seedRef = useRef(Math.random())   // new random order on every visit → every sponsor gets a fair turn at the front
   const pageRef = useRef(1), moreRef = useRef(true), busyRef = useRef(false), sentinel = useRef(null)
 
   // feed = true reloads the profile list from page 1 (pull-to-refresh / first load).
@@ -107,11 +109,7 @@ function HomeContent() {
     api.get('/stories').then(r => setStories(arr(r.data))).catch(() => {})
     api.get('/admin/announcements').then(r => setAnnouncements(arr(r.data))).catch(() => {})
     api.get('/blog?limit=8').then(r => setBlog(r.data?.posts || r.data || [])).catch(() => {})
-    api.get('/admin/sponsored').then(r => {
-      const active = arr(r.data).filter(s => s.is_active)
-      setSponsored(active)
-      active.forEach(s => api.post(`/admin/sponsored/${s.id}/impression`).catch(() => {}))
-    }).catch(() => {})
+    api.get('/admin/sponsored').then(r => setSponsored(arr(r.data).filter(s => s.is_active))).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -165,9 +163,17 @@ function HomeContent() {
   // VIP (featured-tier) profiles → the "Featured" row, as soon as there is one
   const tierFeatured = all.filter(e => e.position === 'featured')
   const rail = tierFeatured.slice(0, 10)
+  // Big catalog: profiles in the Featured row are not repeated in Discover.
+  // Small catalog: Discover shows EVERYONE (otherwise it would be left almost empty).
   const railIds = new Set(rail.map(e => e.uuid))
-  const rest = all.filter(e => !railIds.has(e.uuid))
-  const feed = useMemo(() => buildFeed(rest, sponsored, ads), [rest.length, sponsored, ads]) // eslint-disable-line
+  const rest = all.length >= 12 ? all.filter(e => !railIds.has(e.uuid)) : all
+  const shuffled = useMemo(() => {
+    const h = (id) => { const x = Math.sin((Number(id) || 0) * 12.9898 + seedRef.current * 78.233) * 43758.5453; return x - Math.floor(x) }
+    return [...sponsored].sort((a, b) => h(a.id) - h(b.id))
+  }, [sponsored])
+  const sponsoredRail = shuffled.slice(0, 15)                                        // everyone, swipeable
+  const sponsoredFeed = shuffled.length > 3 ? shuffled.slice(3) : shuffled            // in-feed cards lead with different ones
+  const feed = useMemo(() => buildFeed(rest, sponsoredFeed, ads), [rest.length, sponsoredFeed, ads]) // eslint-disable-line
 
   return (
     <PullToRefresh onRefresh={() => fetchAll({ feed: true })}>
@@ -186,10 +192,11 @@ function HomeContent() {
         <HomeSearch />
         {user?.role === 'admin' && (
           <p className="max-w-7xl mx-auto px-4 mt-3 text-[11px] text-gray-500" data-testid="admin-feed-info">
-            Admin view · profiles {all.length} · VIP in Featured row {rail.length}{rail.length === 0 ? ' (needs a VIP-tier escort with an active membership)' : ''} · boosted {all.filter(e => e.is_boosted).length} · active sponsored {sponsored.length} · ads {ads.length} · announcements {announcements.length}
+            Admin view · profiles {all.length} · VIP in Featured row {rail.length}{rail.length === 0 ? ' (needs a VIP-tier escort with an active membership)' : ''} · boosted {all.filter(e => e.is_boosted).length} · active sponsored {sponsored.length} (all in the Sponsored row) · ads {ads.length} · announcements {announcements.length}
           </p>
         )}
         <FeaturedRail items={rail} />
+        <SponsoredRail items={sponsoredRail} />
 
         {/* Discover: the main feed. Boosted profiles lead it; Sponsored cards and Ads sit between profiles */}
         <section className="max-w-7xl mx-auto px-4 mt-5">
