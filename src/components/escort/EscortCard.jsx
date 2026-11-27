@@ -83,12 +83,12 @@ export default function EscortCard({ escort, index = 0 }) {
                 {escort.name || 'Anonymous'}
               </h3>
               {escort.is_verified && <BlueTick size={16} />}
+              {escort.favourite_count >= 10 && <span className="ml-auto flex-shrink-0 text-[11px] leading-none text-pink-300 bg-black/45 rounded-full px-1.5 py-1">♥ {escort.favourite_count}</span>}
             </div>
             <div className="flex items-center gap-1 text-gray-400 text-xs mt-0.5">
               <MapPin size={10} />
               <span>{escort.city || escort.county || 'Kenya'}</span>
               {escort.age && <span className="ml-1">• {escort.age} yrs</span>}
-              {escort.favourite_count >= 10 && <span className="ml-1 text-pink-400">• ♥ {escort.favourite_count}</span>}
             </div>
           </div>
         </ExpandableMedia>
