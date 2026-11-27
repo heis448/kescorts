@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/sitemap.xml",         "destination": "/api/sitemap" },
+    { "source": "/robots.txt",          "destination": "/api/robots" },
     { "source": "/escort/:id",          "destination": "/api/seo?type=escort&id=:id" },
     { "source": "/escorts-in/:id",      "destination": "/api/seo?type=city&id=:id" },
     { "source": "/(.*)",                "destination": "/index.html" }

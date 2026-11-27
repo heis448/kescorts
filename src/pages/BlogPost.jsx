@@ -7,6 +7,7 @@ import api from '../utils/api'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
 import LazyImage from '../components/ui/LazyImage'
+import { ExpandableMedia } from '../components/ui/MediaGallery'
 
 export default function BlogPost() {
   const { slug }    = useParams()
@@ -86,7 +87,9 @@ export default function BlogPost() {
 
       {/* Cover */}
       {post.cover_url && (
-        <LazyImage src={post.cover_url} alt={post.title} className="w-full h-64 sm:h-80 object-cover rounded-2xl mb-6" />
+        <ExpandableMedia items={[{ url: post.cover_url, type: 'image' }]} className="mb-6 rounded-2xl overflow-hidden">
+          <LazyImage src={post.cover_url} alt={post.title} className="w-full h-64 sm:h-80 object-cover" />
+        </ExpandableMedia>
       )}
 
       {/* Header */}

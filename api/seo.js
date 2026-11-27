@@ -14,8 +14,8 @@ module.exports = async (req, res) => {
       const bio = String(e.bio || '').replace(/\s+/g, ' ').trim()
       const photos = Array.isArray(e.photos) ? e.photos : []
       page = {
-        title: `${e.name || 'Escort'} in ${where} | KenyanEscorts`,
-        description: (bio || `View ${e.name || 'this'} profile on KenyanEscorts.`).slice(0, 155),
+        title: `${e.name || 'Escort'} in ${where} | RedRoom254`,
+        description: (bio || `View ${e.name || 'this'} profile on RedRoom254.`).slice(0, 155),
         path: `/escort/${id}`,
         image: photos[0]?.url,
         jsonLd: { '@context': 'https://schema.org', '@type': 'ProfilePage', mainEntity: { '@type': 'Person', name: e.name, address: where, image: photos[0]?.url } },
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
       const list = await getJSON(`/search?county=${encodeURIComponent(city)}&limit=24`)
       const items = (Array.isArray(list) ? list : []).map(e => `<li><a href="/escort/${esc(e.uuid)}">${esc(e.name)}${e.city ? ' — ' + esc(e.city) : ''}</a></li>`).join('')
       page = {
-        title: `Escorts in ${city} | KenyanEscorts`,
+        title: `Escorts in ${city} | RedRoom254`,
         description: `Browse verified escort profiles in ${city}, Kenya. See photos, rates and availability, and chat directly.`,
         path: `/escorts-in/${slugify(city)}`,
         jsonLd: { '@context': 'https://schema.org', '@type': 'CollectionPage', name: `Escorts in ${city}`, url: `${SITE}/escorts-in/${slugify(city)}` },

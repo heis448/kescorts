@@ -24,9 +24,9 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('push', (event) => {
   let data = {}
-  try { data = event.data ? event.data.json() : {} } catch { data = { title: 'KenyanEscorts', body: event.data?.text() } }
+  try { data = event.data ? event.data.json() : {} } catch { data = { title: 'RedRoom254', body: event.data?.text() } }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'KenyanEscorts', {
+    self.registration.showNotification(data.title || 'RedRoom254', {
       body: data.body || '',
       icon: '/icon-192.png',
       badge: '/icon-192.png',

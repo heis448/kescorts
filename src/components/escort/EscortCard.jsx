@@ -4,6 +4,8 @@ import { motion } from 'framer-motion'
 import LazyImage from '../ui/LazyImage'
 import BlueTick from '../ui/BlueTick'
 import CardSlider from '../ui/CardSlider'
+import { ExpandableMedia } from '../ui/MediaGallery'
+import api from '../../utils/api'
 
 // Solid colours + a soft shadow: readable on bright AND dark photos (the old see-through chips vanished)
 const CHIP = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold leading-none shadow-md shadow-black/50'
@@ -16,6 +18,10 @@ const TIER_BADGE = {
 
 export default function EscortCard({ escort, index = 0 }) {
   const tier = TIER_BADGE[escort.membership_tier]
+  // Tap the photo → full-screen viewer (shows this photo instantly, then the whole album + videos).
+  // The name strip and the footer still open the profile; the viewer has a "View profile" button too.
+  const cardItems = escort.primary_photo ? [{ url: escort.primary_photo, type: 'image' }] : []
+  const loadAlbum = () => api.get(`/profile/${escort.uuid}/media`).then(r => r.data.items || [])
 
   return (
     <motion.div
@@ -25,7 +31,15 @@ export default function EscortCard({ escort, index = 0 }) {
     >
       <Link to={`/escort/${escort.uuid}`} className="group block card hover:border-brand-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-900/30">
         {/* Photo */}
-        <div className="relative aspect-[3/4] bg-dark-700 overflow-hidden">
+        <ExpandableMedia
+          items={cardItems} loadFull={loadAlbum}
+          footer={(close) => (
+            <Link to={`/escort/${escort.uuid}`} onClick={close}
+              className="block w-full text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm">
+              View {escort.name || 'profile'}
+            </Link>
+          )}
+          className="relative aspect-[3/4] bg-dark-700 overflow-hidden">
           {escort.primary_photo ? (
             <LazyImage src={escort.primary_photo} alt={escort.name || 'Escort'} className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
           ) : (
@@ -62,8 +76,8 @@ export default function EscortCard({ escort, index = 0 }) {
             </div>
           )}
 
-          {/* Bottom info overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-3">
+          {/* Bottom info overlay (tapping the name still opens the profile) */}
+          <div data-nav className="absolute bottom-0 left-0 right-0 p-3">
             <div className="flex items-center gap-1.5">
               <h3 className="font-display font-semibold text-white text-lg leading-tight">
                 {escort.name || 'Anonymous'}
@@ -74,9 +88,10 @@ export default function EscortCard({ escort, index = 0 }) {
               <MapPin size={10} />
               <span>{escort.city || escort.county || 'Kenya'}</span>
               {escort.age && <span className="ml-1">• {escort.age} yrs</span>}
+              {escort.favourite_count >= 10 && <span className="ml-1 text-pink-400">• ♥ {escort.favourite_count}</span>}
             </div>
           </div>
-        </div>
+        </ExpandableMedia>
 
         {/* Footer */}
         <div className="p-3 flex items-center justify-between">

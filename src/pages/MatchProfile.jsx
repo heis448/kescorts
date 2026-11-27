@@ -16,13 +16,7 @@ import useAuthStore from '../store/authStore'
 import BlueTick from '../components/ui/BlueTick'
 import { MediaLightbox } from '../components/ui/MediaGallery'
 import LazyImage from '../components/ui/LazyImage'
-
-const normalizePhone = (phone) => {
-  let p = String(phone).replace(/[\s\-\+]/g, '')
-  if (p.startsWith('0') && p.length === 10) return '254' + p.slice(1)
-  if (p.length === 9 && (p.startsWith('7') || p.startsWith('1'))) return '254' + p
-  return p
-}
+import { waDigits, telHref } from '../utils/phone'
 
 // ── Reveal Modal ─────────────────────────────────────────────────────────────
 function RevealModal({ profile, onClose, onRevealed }) {
@@ -223,7 +217,7 @@ function RevealModal({ profile, onClose, onRevealed }) {
               <div className="flex gap-2">
                 {(contact.whatsapp || contact.phone) && (
                   <a
-                    href={`https://wa.me/${normalizePhone(contact.whatsapp || contact.phone)}?text=${encodeURIComponent(`Hi ${profile.name}!`)}`}
+                    href={`https://wa.me/${waDigits(contact.whatsapp || contact.phone)}?text=${encodeURIComponent(`Hi ${profile.name}!`)}`}
                     target="_blank" rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600/20 border border-green-700/30 text-green-400 text-sm font-medium"
                   >
@@ -232,7 +226,7 @@ function RevealModal({ profile, onClose, onRevealed }) {
                 )}
                 {contact.phone && (
                   <a
-                    href={`tel:${contact.phone}`}
+                    href={telHref(contact.phone)}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-700 border border-dark-600 text-gray-300 text-sm font-medium"
                   >
                     <Phone size={15} /> Call
@@ -317,7 +311,7 @@ export default function MatchProfile() {
           <Link to="/match" className="flex items-center gap-1 text-gray-400 hover:text-white text-sm transition-colors">
             <ChevronLeft size={16} /> Back to Match
           </Link>
-          <ShareButton title={`${profile.name} on KenyanEscorts`} text={`Take a look at ${profile.name} on KenyanEscorts`} url={`${SITE}/match/${profile.uuid || uuid}`} />
+          <ShareButton title={`${profile.name} on RedRoom254`} text={`Take a look at ${profile.name} on RedRoom254`} url={`${SITE}/match/${profile.uuid || uuid}`} />
         </div>
 
         {/* Gallery */}
@@ -503,7 +497,7 @@ export default function MatchProfile() {
                 <div className="flex gap-2">
                   {(profile.whatsapp || profile.phone) && (
                     <a
-                      href={`https://wa.me/${normalizePhone(profile.whatsapp || profile.phone)}?text=${encodeURIComponent(`Hi ${profile.name}, I saw your profile on KenyanEscorts!`)}`}
+                      href={`https://wa.me/${waDigits(profile.whatsapp || profile.phone)}?text=${encodeURIComponent(`Hi ${profile.name}, I saw your profile on RedRoom254!`)}`}
                       target="_blank" rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600/20 border border-green-700/30 text-green-400 font-medium"
                     >
@@ -511,7 +505,7 @@ export default function MatchProfile() {
                     </a>
                   )}
                   {profile.phone && (
-                    <a href={`tel:${profile.phone}`}
+                    <a href={telHref(profile.phone)}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-700 border border-dark-600 text-gray-300 font-medium">
                       <Phone size={16} /> Call
                     </a>
@@ -533,7 +527,7 @@ export default function MatchProfile() {
                 <div className="flex gap-2">
                   {(revealed.whatsapp || revealed.phone) && (
                     <a
-                      href={`https://wa.me/${normalizePhone(revealed.whatsapp || revealed.phone)}?text=${encodeURIComponent(`Hi ${profile.name}!`)}`}
+                      href={`https://wa.me/${waDigits(revealed.whatsapp || revealed.phone)}?text=${encodeURIComponent(`Hi ${profile.name}!`)}`}
                       target="_blank" rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600/20 border border-green-700/30 text-green-400 font-medium"
                     >
@@ -541,7 +535,7 @@ export default function MatchProfile() {
                     </a>
                   )}
                   {revealed.phone && (
-                    <a href={`tel:${revealed.phone}`}
+                    <a href={telHref(revealed.phone)}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-700 border border-dark-600 text-gray-300 font-medium">
                       <Phone size={16} /> Call
                     </a>

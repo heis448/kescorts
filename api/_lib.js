@@ -31,8 +31,8 @@ function inject(shell, { title, description, path, image, jsonLd, body }) {
     `<meta property="og:title" content="${esc(title)}" />`,
     `<meta property="og:description" content="${esc(description)}" />`,
     `<meta property="og:url" content="${esc(url)}" />`,
-    image ? `<meta property="og:image" content="${esc(image)}" />` : '',
-    `<meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}" />`,
+    `<meta property="og:image" content="${esc(image || SITE + '/og-image.jpg')}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
     jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>` : ''
   ].join('\n    ')
 

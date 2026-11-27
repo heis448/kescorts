@@ -22,7 +22,7 @@ export default function InviteCard() {
         </div>
       </div>
       <div className="flex gap-2">
-        <ShareButton title="Join me on KenyanEscorts" text="Join me on KenyanEscorts" url={link} label="Share my link"
+        <ShareButton title="Join me on RedRoom254" text="Join me on RedRoom254" url={link} label="Share my link"
           className="flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-xl py-2.5 active:scale-95 transition" />
         <button onClick={copy} aria-label="Copy link" className="px-3 rounded-xl bg-dark-800 border border-dark-600 text-gray-300 active:scale-95 transition"><Copy size={16} /></button>
       </div>

@@ -64,7 +64,7 @@ function WhyUs() {
   ]
   return (
     <section className="max-w-7xl mx-auto px-4 mt-10">
-      <h2 className="text-base font-bold text-white mb-3">Why KenyanEscorts</h2>
+      <h2 className="text-base font-bold text-white mb-3">Why RedRoom254</h2>
       <div className="grid sm:grid-cols-3 gap-3">
         {items.map(({ icon: Icon, title, text }) => (
           <div key={title} className="flex sm:block items-center gap-3 rounded-2xl bg-dark-800 border border-dark-700 p-4">
@@ -179,10 +179,10 @@ function HomeContent() {
     <PullToRefresh onRefresh={() => fetchAll({ feed: true })}>
       <div className="page-enter pb-6">
         <Seo
-          title="KenyanEscorts — Find Escorts in Nairobi, Mombasa, Kisumu & More"
+          title="RedRoom254 — Find Escorts in Nairobi, Mombasa, Kisumu & More"
           description="Browse escort profiles across Kenya. Filter by city, chat directly and find your match."
           path="/"
-          jsonLd={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'KenyanEscorts', url: SITE }}
+          jsonLd={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'RedRoom254', url: SITE }}
         />
 
         {user ? <h1 className="sr-only">Escorts in Kenya</h1> : <GuestHero />}

@@ -12,15 +12,10 @@ import Seo from '../components/Seo'
 import { SkeletonGrid } from '../components/ui/Skeleton'
 import PullToRefresh from '../components/ui/PullToRefresh'
 import LazyImage from '../components/ui/LazyImage'
+import { ExpandableMedia } from '../components/ui/MediaGallery'
+import { waDigits, telHref } from '../utils/phone'
 
 const PREF_KEY = 'match_guest_prefs'
-
-const normalizePhone = (phone) => {
-  let p = String(phone).replace(/[\s\-\+]/g, '')
-  if (p.startsWith('0') && p.length === 10) return '254' + p.slice(1)
-  if (p.length === 9 && (p.startsWith('7') || p.startsWith('1'))) return '254' + p
-  return p
-}
 
 // Guest client-side scoring
 const scoreProfile = (p, prefs) => {
@@ -50,6 +45,16 @@ function MatchCard({ profile }) {
       className="card overflow-hidden hover:border-brand-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-900/30"
     >
       <Link to={`/match/${profile.uuid}`} className="block relative aspect-[3/4] bg-dark-700 overflow-hidden group">
+        <ExpandableMedia
+          items={profile.cover_photo ? [{ url: profile.cover_photo, type: 'image' }] : []}
+          loadFull={() => api.get(`/match/${profile.uuid}`).then(r => (r.data.media || []).map(m => ({ url: m.url, type: m.media_type === 'video' ? 'video' : 'image' })))}
+          footer={(close) => (
+            <Link to={`/match/${profile.uuid}`} onClick={close}
+              className="block w-full text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm">
+              View {profile.name}
+            </Link>
+          )}
+          className="absolute inset-0">
         {profile.cover_photo ? (
           <LazyImage src={profile.cover_photo} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
@@ -74,7 +79,8 @@ function MatchCard({ profile }) {
             <Heart size={9} fill="white" /> {profile.match_score}%
           </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 p-3">
+        </ExpandableMedia>
+        <div data-nav className="absolute bottom-0 left-0 right-0 p-3">
           <div className="flex items-center gap-1.5">
             <h3 className="font-display font-semibold text-white text-lg leading-tight">{profile.name}</h3>
             {profile.is_verified && <BlueTick size={16} />}
@@ -92,13 +98,13 @@ function MatchCard({ profile }) {
         {!profile.is_verified ? (
           <div className="flex gap-2">
             <a
-              href={`https://wa.me/${normalizePhone(profile.whatsapp || profile.phone || '')}?text=${encodeURIComponent(`Hi ${profile.name}, I found your profile on KenyanEscorts.`)}`}
+              href={`https://wa.me/${waDigits(profile.whatsapp || profile.phone || '')}?text=${encodeURIComponent(`Hi ${profile.name}, I found your profile on RedRoom254.`)}`}
               target="_blank" rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 text-green-400 text-xs font-medium transition-colors border border-green-700/30"
             >
               <MessageCircle size={13} /> WhatsApp
             </a>
-            <a href={`tel:${profile.phone}`}
+            <a href={telHref(profile.phone)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 text-gray-300 text-xs font-medium transition-colors border border-dark-600">
               <Phone size={13} /> Call
             </a>
@@ -208,7 +214,7 @@ export default function MatchPage() {
   return (
     <PullToRefresh onRefresh={() => fetchProfiles(tab, q, 1, prefs)}>
     <div className="min-h-screen bg-dark-950 pb-16">
-      <Seo title="Find Your Match | KenyanEscorts" description="Browse verified and random partners across Kenya and set your preferences for personalised matches." path="/match" />
+      <Seo title="Find Your Match | RedRoom254" description="Browse verified and random partners across Kenya and set your preferences for personalised matches." path="/match" />
       {/* Hero */}
       <div className="bg-gradient-to-b from-dark-800 to-dark-950 border-b border-dark-700 px-4 pt-8 pb-6">
         <div className="max-w-5xl mx-auto">

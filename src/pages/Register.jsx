@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Eye, EyeOff, UserPlus, X } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import toast from 'react-hot-toast'
+import { isValidKE } from '../utils/phone'
 
 export default function Register() {
   const [form, setForm] = useState({ email: '', phone: '', password: '', confirmPassword: '', role: 'client' })
@@ -19,7 +20,7 @@ export default function Register() {
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email'
 
     if (!form.phone) e.phone = 'Phone is required'
-    else if (!/^0[17]\d{8}$/.test(form.phone.replace(/\s/g, ''))) e.phone = 'Enter a valid  number (07XX or 01XX)'
+    else if (!isValidKE(form.phone)) e.phone = 'Enter a valid  number (07XX or 01XX)'
 
     if (!form.password) e.password = 'Password is required'
     else if (form.password.length < 6) e.password = 'Password must be at least 6 characters'
@@ -59,9 +60,9 @@ export default function Register() {
         </button>
 
         <div className="text-center mb-8">
-          <img src="/logo.jpg" alt="Kenya Escorts" className="w-36 mx-auto mb-4 mix-blend-screen select-none" draggable="false" />
+          <img src="/logo.jpg" alt="RedRoom254" className="w-40 h-40 mx-auto mb-4 rounded-full object-cover shadow-lg shadow-black/50 select-none" draggable="false" />
           <h1 className="font-display font-bold text-3xl text-white mb-2">Create Account</h1>
-          <p className="text-gray-500">Join Kenya Escorts today</p>
+          <p className="text-gray-500">Join RedRoom254 today</p>
         </div>
 
         <div className="card p-8">

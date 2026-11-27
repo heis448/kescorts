@@ -15,8 +15,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <LazyImage src="/logo-mark.png" alt="KenyaEscorts" className="w-8 h-8 rounded-lg object-cover" />
-              <span className="font-display font-bold text-white">KenyaEscorts</span>
+              <LazyImage src="/logo-mark.png" alt="RedRoom254" className="w-8 h-8 rounded-full object-cover" />
+              <span className="font-display font-bold text-white">RedRoom254</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               Kenya's premium escorts services directory. Safe, discreet, and verified ✅.
@@ -73,7 +73,7 @@ export default function Footer() {
         )}
 
         <div className="border-t border-dark-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
-          <p>© {new Date().getFullYear()} KenyaEscorts. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} RedRoom254. All rights reserved.</p>
           <p>Must be 18+ to use this site. An0nOtF Technologies Inc 💎.</p>
         </div>
       </div>

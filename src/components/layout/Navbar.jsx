@@ -88,12 +88,12 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2 group">
           <LazyImage
             src="/logo-mark.png"
-            alt="KenyanEscorts"
+            alt="RedRoom254"
             priority
-            className="w-8 h-8 rounded-lg shadow-lg shadow-brand-900/30"
+            className="w-9 h-9 rounded-full shadow-lg shadow-brand-900/30"
           />
           <span className="font-display font-bold text-white text-lg hidden sm:block">
-            Kenya<span className="text-brand-500">Escorts</span>
+            RedRoom<span className="text-brand-500">254</span>
           </span>
         </Link>
 

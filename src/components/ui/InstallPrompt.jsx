@@ -38,9 +38,9 @@ export default function InstallPrompt() {
   if (!show || isInstalled()) return null
   return (
     <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md bg-dark-800 border border-dark-600 rounded-2xl shadow-xl p-4 flex items-start gap-3">
-      <img src="/logo-mark.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
+      <img src="/logo-mark.png" alt="" className="w-10 h-10 rounded-full flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white">Install KenyanEscorts</p>
+        <p className="text-sm font-semibold text-white">Install RedRoom254</p>
         {available ? (
           <>
             <p className="text-xs text-gray-400 mt-0.5">Add it to your home screen for faster access and message alerts.</p>

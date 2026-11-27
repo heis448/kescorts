@@ -174,9 +174,23 @@ export default function AdminSponsored() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
-                    <span>👁 {s.impressions || 0}</span>
-                    <span>🖱 {s.clicks || 0}</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-gray-500">
+                    <span title="Times the card was seen">👁 {s.impressions || 0}</span>
+                    <span title="Photo opened full-screen">🔍 {s.opens || 0}</span>
+                    <span title="Call + WhatsApp + link taps">🖱 {s.clicks || 0}</span>
+                    <span title="Clicks ÷ views">📈 {s.impressions > 0 ? (Math.round((s.clicks / s.impressions) * 1000) / 10) : 0}%</span>
+                    <span title="Call taps">📞 {s.call_clicks || 0}</span>
+                    <span title="WhatsApp taps">💬 {s.wa_clicks || 0}</span>
+                    {s.stats_token && (
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/sponsor-stats/${s.stats_token}`
+                          navigator.clipboard?.writeText(url).then(() => toast.success('Report link copied — send it to the sponsor'), () => toast(url))
+                        }}
+                        className="text-brand-400 hover:text-brand-300 underline underline-offset-2">
+                        Copy report link
+                      </button>
+                    )}
                     <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded-full ${s.is_active ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-500'}`}>
                       {s.is_active ? 'Active' : 'Hidden'}
                     </span>

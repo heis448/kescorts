@@ -11,12 +11,12 @@ export default function Seo({ title, description, path = '', image, jsonLd, noin
       <link rel="canonical" href={url} />
       {noindex && <meta name="robots" content="noindex,nofollow" />}
       <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="KenyanEscorts" />
+      <meta property="og:site_name" content="RedRoom254" />
       <meta property="og:title" content={title} />
       {description && <meta property="og:description" content={description} />}
       <meta property="og:url" content={url} />
-      <meta property="og:image" content={image || `${SITE}/logo.jpg`} />
-      <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+      <meta property="og:image" content={image || `${SITE}/og-image.jpg`} />
+      <meta name="twitter:card" content="summary_large_image" />
       {jsonLd && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}
     </Helmet>
   )

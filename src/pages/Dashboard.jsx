@@ -15,6 +15,7 @@ import useAuthStore from '../store/authStore'
 import api from '../utils/api'
 import toast from 'react-hot-toast'
 import LazyImage from '../components/ui/LazyImage'
+import { ExpandableMedia } from '../components/ui/MediaGallery'
 import BoostTab from '../components/dashboard/BoostTab'
 import CameraCapture from '../components/ui/CameraCapture'
 import InviteCard from '../components/ui/InviteCard'
@@ -65,7 +66,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState({
     name:'', age:'', gender:'female', sexual_orientation:'straight',
     nationality:'Kenyan', county:'', city:'', location:'', area:'',
-    phone:'', incalls_rate:'', outcalls_rate:'', bio:'', services:[], other_services:[]
+    phone:'', contact_mode:'both', incalls_rate:'', outcalls_rate:'', bio:'', services:[], other_services:[]
   })
   const [photos, setPhotos]   = useState([])
   const [saving, setSaving]   = useState(false)
@@ -152,7 +153,7 @@ export default function Dashboard() {
           sexual_orientation: p.sexual_orientation||'straight',
           nationality: p.nationality||'Kenyan', county: p.county||'',
           city: p.city||'', location: p.location||'', area: p.area||'',
-          phone: p.phone||'', incalls_rate: p.incalls_rate||'', outcalls_rate: p.outcalls_rate||'',
+          phone: p.phone||'', contact_mode: p.contact_mode||'both', incalls_rate: p.incalls_rate||'', outcalls_rate: p.outcalls_rate||'',
           bio: p.bio||'', services: p.services||[], other_services: p.other_services||[],
         })
         setPhotos(p.photos||[])
@@ -797,6 +798,15 @@ export default function Dashboard() {
                         onChange={e => setProfile({...profile,[k]:e.target.value})} />
                     </div>
                   ))}
+                  <div className="sm:col-span-2">
+                    <label className="text-xs text-gray-500 mb-1.5 block font-medium">Who can reach me</label>
+                    <select className="input" value={profile.contact_mode || 'both'} onChange={e => setProfile({...profile,contact_mode:e.target.value})}>
+                      <option value="both">WhatsApp + Call (clients pay stars to unlock my number)</option>
+                      <option value="whatsapp">WhatsApp only (clients pay stars to unlock)</option>
+                      <option value="chat">Chat only (my number is never shown)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1.5">Your number is hidden from the public and from search. A client has to be logged in and pay stars once to see it, and you earn a share of those stars. Chat only keeps it private completely.</p>
+                  </div>
                   <div>
                     <label className="text-xs text-gray-500 mb-1.5 block font-medium">County</label>
                     <select className="input" value={profile.county} onChange={e => setProfile({...profile,county:e.target.value})}>
@@ -936,27 +946,29 @@ export default function Dashboard() {
                   <span className="text-xs text-gray-500">{photos.length} / {membership?.max_photos || 4}</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                  {photos.map(p => (
-                    <div key={p.id} className="relative aspect-square rounded-xl overflow-hidden group">
+                  {photos.map((p, pi) => (
+                    <ExpandableMedia key={p.id} items={photos.map(x => ({ url: x.url, type: 'image' }))} startIndex={pi}
+                      className="relative aspect-square rounded-xl overflow-hidden group">
                       <LazyImage src={p.url} className="w-full h-full object-cover" />
                       {p.is_primary && (
                         <span className="absolute top-1.5 left-1.5 bg-brand-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
                           Profile pic
                         </span>
                       )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex flex-col items-center justify-center gap-1.5">
+                      {/* Buttons are always visible on touch screens (there is no hover); tap the photo itself to enlarge */}
+                      <div className="absolute inset-0 md:bg-black/0 md:group-hover:bg-black/50 transition-colors flex flex-col items-center justify-end md:justify-center gap-1.5 p-1.5">
                         {!p.is_primary && (
                           <button onClick={() => setPrimaryPhoto(p.id)}
-                            className="opacity-0 group-hover:opacity-100 bg-brand-500 hover:bg-brand-400 text-white text-xs px-3 py-1.5 rounded-lg transition-all">
+                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-brand-500 hover:bg-brand-400 text-white text-[11px] md:text-xs px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg transition-all">
                             Set as profile pic
                           </button>
                         )}
                         <button onClick={() => deletePhoto(p.id)}
-                          className="opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-400 text-white text-xs px-3 py-1.5 rounded-lg transition-all">
+                          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-red-500 hover:bg-red-400 text-white text-[11px] md:text-xs px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg transition-all">
                           Remove
                         </button>
                       </div>
-                    </div>
+                    </ExpandableMedia>
                   ))}
                   <button type="button" onClick={() => setCamera('gallery')}
                     className="aspect-square border-2 border-dashed border-dark-500 hover:border-brand-500 rounded-xl flex flex-col items-center justify-center transition-colors group">

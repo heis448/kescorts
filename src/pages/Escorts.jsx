@@ -100,7 +100,7 @@ export default function Escorts() {
     <PullToRefresh onRefresh={() => fetchEscorts(filters, 1)}>
     <div className="max-w-7xl mx-auto px-4 py-8 page-enter">
       <Seo
-        title={cityName ? `Escorts in ${cityName} | KenyanEscorts` : 'Browse Escorts in Kenya | KenyanEscorts'}
+        title={cityName ? `Escorts in ${cityName} | RedRoom254` : 'Browse Escorts in Kenya | RedRoom254'}
         description={cityName
           ? `Browse verified escort profiles in ${cityName}, Kenya. See photos, rates and availability, and chat directly.`
           : 'Browse escort profiles across Kenya — Nairobi, Mombasa, Kisumu, Nakuru and more.'}

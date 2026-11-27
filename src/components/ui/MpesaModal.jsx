@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Smartphone, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
+import { toE164KE, isValidKE } from '../../utils/phone'
 
 export default function MpesaModal({
   isOpen, onClose, onSuccess,
@@ -19,16 +20,9 @@ export default function MpesaModal({
     if (isOpen) { setPhone(''); setCustomAmount(''); setStatus('idle'); setCheckoutId(null) }
   }, [isOpen])
 
-  // Normalize to 254XXXXXXXXX — same logic as backend
-  const normalizePhone = (raw) => {
-    let p = raw.replace(/[\s\-\+\(\)]/g, '')
-    if (p.startsWith('0') && p.length === 10) return '254' + p.slice(1)
-    if (p.length === 9 && (p.startsWith('7') || p.startsWith('1'))) return '254' + p
-    return p
-  }
-
-  const normalized = normalizePhone(phone)
-  const phoneValid = normalized.length === 12 && normalized.startsWith('254')
+  // Normalize to 254XXXXXXXXX — same logic as backend (shared helper)
+  const normalized = toE164KE(phone) || phone.replace(/\D/g, '')
+  const phoneValid = isValidKE(phone)
   const [customAmount, setCustomAmount] = useState('')
   const [status, setStatus]       = useState('idle')
   const [checkoutId, setCheckoutId] = useState(null)

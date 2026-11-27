@@ -25,6 +25,7 @@ import Membership    from './pages/Membership'
 import Wallet        from './pages/Wallet'
 import ChatPage      from './pages/ChatPage'
 import BlogPage      from './pages/BlogPage'
+import SponsorStats  from './pages/SponsorStats'
 import BlogPost      from './pages/BlogPost'
 import MatchPage     from './pages/MatchPage'
 import MatchProfile  from './pages/MatchProfile'
@@ -117,6 +118,7 @@ export default function App() {
         <Route path="/blog/:slug"  element={<PublicLayout><BlogPost /></PublicLayout>} />
         <Route path="/match"       element={<PublicLayout><MatchPage /></PublicLayout>} />
         <Route path="/match/:uuid" element={<PublicLayout><MatchProfile /></PublicLayout>} />
+        <Route path="/sponsor-stats/:token" element={<PublicLayout><SponsorStats /></PublicLayout>} />
         <Route path="/login"       element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/register"    element={<PublicLayout><Register /></PublicLayout>} />
 

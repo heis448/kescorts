@@ -2,7 +2,7 @@ import LazyImage from '../components/ui/LazyImage'
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Phone, MessageCircle, BadgeCheck, Star, ChevronLeft, Eye, Heart, BookOpen, Loader2, Send, X } from 'lucide-react'
+import { MapPin, Phone, MessageCircle, BadgeCheck, Star, ChevronLeft, Eye, Heart, BookOpen, Loader2, Send, X, Lock } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import api from '../utils/api'
 import useAuthStore from '../store/authStore'
@@ -12,13 +12,7 @@ import toast from 'react-hot-toast'
 import Seo from '../components/Seo'
 import ShareButton from '../components/ui/ShareButton'
 import { SITE } from '../utils/site'
-
-const normalizePhone = (phone) => {
-  let p = String(phone).replace(/[\s\-\+]/g, '')
-  if (p.startsWith('0') && p.length === 10) return '254' + p.slice(1)
-  if (p.length === 9 && (p.startsWith('7') || p.startsWith('1'))) return '254' + p
-  return p
-}
+import { waDigits, telHref } from '../utils/phone'
 
 const TIER_STYLES = {
   VIP:         'badge-vip',
@@ -37,6 +31,7 @@ export default function EscortProfile() {
   const [escort, setEscort]         = useState(null)
   const [loading, setLoading]       = useState(true)
   const [starting, setStarting]     = useState(false)
+  const [revealing, setRevealing]   = useState(false)
   const [activeTab, setActiveTab]   = useState('about')
   const [favourited, setFavourited] = useState(false)
   const [reviews, setReviews]       = useState([])
@@ -61,6 +56,22 @@ export default function EscortProfile() {
       api.get(`/favourites/check/${uuid}`).then(r => setFavourited(r.data.favourited)).catch(() => {})
     }
   }, [uuid])
+
+  // Numbers are hidden: a logged-in client pays stars once per escort to unlock WhatsApp / Call
+  const revealPhone = async () => {
+    if (!user) return navigate('/login')
+    setRevealing(true)
+    try {
+      const { data } = await api.post(`/profile/${uuid}/reveal-phone`)
+      setEscort(e => ({ ...e, phone: data.phone, phone_revealed: true, contact_mode: data.contact_mode || e.contact_mode }))
+      toast.success('Contact unlocked')
+    } catch (err) {
+      if (err.response?.data?.error === 'insufficient_stars') {
+        toast.error(`You need ${err.response.data.required} stars to unlock this contact. Top up your wallet!`)
+        navigate('/wallet')
+      } else toast.error(err.response?.data?.error || 'Could not unlock contact')
+    } finally { setRevealing(false) }
+  }
 
   const startChat = async () => {
     if (!user) return navigate('/login')
@@ -140,8 +151,8 @@ export default function EscortProfile() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 page-enter">
       <Seo
-        title={`${escort.name || 'Escort'}${escort.city || escort.county ? ' in ' + (escort.city || escort.county) : ''} | KenyanEscorts`}
-        description={(escort.bio || `View ${escort.name || 'this'} profile on KenyanEscorts.`).replace(/\s+/g, ' ').slice(0, 155)}
+        title={`${escort.name || 'Escort'}${escort.city || escort.county ? ' in ' + (escort.city || escort.county) : ''} | RedRoom254`}
+        description={(escort.bio || `View ${escort.name || 'this'} profile on RedRoom254.`).replace(/\s+/g, ' ').slice(0, 155)}
         path={`/escort/${uuid}`}
         image={photos[0]?.url}
       />
@@ -149,7 +160,7 @@ export default function EscortProfile() {
         <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-white transition-colors">
           <ChevronLeft size={16} /> Back
         </button>
-        <ShareButton title={`${escort.name} on KenyanEscorts`} text={`Check out ${escort.name} on KenyanEscorts`} url={`${SITE}/escort/${uuid}`} />
+        <ShareButton title={`${escort.name} on RedRoom254`} text={`Check out ${escort.name} on RedRoom254`} url={`${SITE}/escort/${uuid}`} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -169,8 +180,11 @@ export default function EscortProfile() {
           )}
 
           {/* Photo gallery */}
-          {photos.length > 0 ? (
-            <MediaGallery items={photos.map(p => ({ type: 'image', url: p.url, public_id: p.public_id }))} />
+          {(photos.length > 0 || (escort.videos || []).length > 0) ? (
+            <MediaGallery items={[
+              ...[...photos].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)).map(p => ({ type: 'image', url: p.url, public_id: p.public_id })),
+              ...(escort.videos || []).map(v => ({ type: 'video', url: v.url, thumbnail: v.thumbnail })),
+            ]} />
           ) : (
             <div className="aspect-[4/5] bg-dark-800 rounded-2xl flex items-center justify-center">
               <div className="text-center text-gray-600">
@@ -404,21 +418,27 @@ export default function EscortProfile() {
                 {starting ? <Loader2 size={16} className="animate-spin" /> : <MessageCircle size={16} />}
                 {starting ? 'Starting...' : `Chat · ⭐${starsPerMsg}/msg`}
               </button>
-              {escort.phone && (
+              {escort.phone_available && (escort.phone ? (
                 <>
-                  <a href={`https://wa.me/${normalizePhone(escort.phone)}?text=${encodeURIComponent(`Hi ${escort.name}, I saw your profile on KenyanScorts and I'm interested in your services.`)}`}
+                  <a href={`https://wa.me/${waDigits(escort.phone)}?text=${encodeURIComponent(`Hi ${escort.name}, I saw your profile on RedRoom254 and I'm interested in your services.`)}`}
                     target="_blank" rel="noopener noreferrer"
                     className="btn-ghost w-full justify-center flex items-center gap-2 text-sm text-green-400 border-green-900 hover:border-green-600"
                     onClick={() => api.post(`/profile/${uuid}/phone-view`).catch(() => {})}>
                     <Phone size={16} /> WhatsApp
                   </a>
-                  <a href={`tel:${escort.phone}`}
+                  {escort.contact_mode !== 'whatsapp' && <a href={telHref(escort.phone)}
                     className="btn-ghost w-full justify-center flex items-center gap-2 text-sm"
                     onClick={() => api.post(`/profile/${uuid}/phone-view`).catch(() => {})}>
                     <Phone size={16} /> Call
-                  </a>
+                  </a>}
                 </>
-              )}
+              ) : (
+                <button onClick={revealPhone} disabled={revealing}
+                  className="btn-ghost w-full justify-center flex items-center gap-2 text-sm">
+                  {revealing ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
+                  {user ? `Unlock contact · ⭐${escort.phone_reveal_stars}` : 'Login to unlock contact'}
+                </button>
+              ))}
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import useAuthStore from '../store/authStore'
 import MediaUploader from '../components/ui/MediaUploader'
 import MediaGallery from '../components/ui/MediaGallery'
 import toast from 'react-hot-toast'
+import { telHref } from '../utils/phone'
 
 const CATEGORIES = ['All', 'escorts', 'massage', 'clubs', 'party', 'hookup', 'sugar daddy', 'sugar mummy', 'vacancy']
 const EMPTY_FORM = { title: '', body: '', category: 'escorts', location: '', phone: '' }
@@ -181,7 +182,7 @@ export default function Classifieds() {
                     <span className="flex items-center gap-1"><MapPin size={11} /> {p.location}</span>
                   )}
                   {p.phone && (
-                    <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-brand-400 hover:text-brand-300 transition-colors">
+                    <a href={telHref(p.phone)} className="flex items-center gap-1 text-brand-400 hover:text-brand-300 transition-colors">
                       <Phone size={11} /> {p.phone}
                     </a>
                   )}

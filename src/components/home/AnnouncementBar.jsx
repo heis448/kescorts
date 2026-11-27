@@ -53,7 +53,7 @@ export default function AnnouncementBar({ announcements = [] }) {
                 const media = (Array.isArray(n.media) ? n.media : []).filter(m => m?.url)
                 return (
                   <div key={n.id} className="rounded-2xl border border-dark-600 bg-dark-700/60 overflow-hidden">
-                    {media.length > 0 && <div className="aspect-video"><CardSlider items={media.map(m => ({ url: m.url, type: m.type || 'image' }))} className="w-full h-full" /></div>}
+                    {media.length > 0 && <div className="aspect-video"><CardSlider items={media.map(m => ({ url: m.url, type: m.type || 'image' }))} expandable className="w-full h-full" /></div>}
                     <div className="p-4 space-y-1.5">
                       <p className="font-semibold text-white">{n.title}</p>
                       {n.body && <p className="text-sm text-gray-300 whitespace-pre-line">{n.body}</p>}

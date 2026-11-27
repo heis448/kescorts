@@ -47,12 +47,12 @@ export default function AdminLayout() {
       <div className={`flex items-center border-b border-white/10 ${collapsed && !isMobile ? 'justify-center px-3 py-5' : 'gap-3 px-5 py-5'}`}>
         <img
           src="/logo-mark.png"
-          alt="KenyaEscorts"
-          className="w-9 h-9 rounded-xl object-cover flex-shrink-0 shadow-lg shadow-brand-900/40"
+          alt="RedRoom254"
+          className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-lg shadow-brand-900/40"
         />
         {(!collapsed || isMobile) && (
           <div className="min-w-0">
-            <p className="text-white font-bold text-sm leading-tight">Kenya Escorts</p>
+            <p className="text-white font-bold text-sm leading-tight">RedRoom254</p>
             <p className="text-brand-400 text-xs font-medium">Admin Panel</p>
           </div>
         )}
