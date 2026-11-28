@@ -8,6 +8,7 @@ import MediaUploader from '../components/ui/MediaUploader'
 import MediaGallery from '../components/ui/MediaGallery'
 import toast from 'react-hot-toast'
 import { telHref } from '../utils/phone'
+import ScrollRail from '../components/ui/ScrollRail'
 
 const CATEGORIES = ['All', 'escorts', 'massage', 'clubs', 'party', 'hookup', 'sugar daddy', 'sugar mummy', 'vacancy']
 const EMPTY_FORM = { title: '', body: '', category: 'escorts', location: '', phone: '' }
@@ -114,7 +115,7 @@ export default function Classifieds() {
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+      <ScrollRail className="flex gap-2 overflow-x-auto pb-2 mb-6 no-scrollbar">
         {CATEGORIES.map(c => (
           <button key={c} onClick={() => setCategory(c)}
             className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm border transition-all capitalize ${
@@ -124,7 +125,7 @@ export default function Classifieds() {
             }`}>{c}
           </button>
         ))}
-      </div>
+      </ScrollRail>
 
       {/* Posts */}
       {loading ? (

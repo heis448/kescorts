@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../../utils/api'
 import LazyImage from '../ui/LazyImage'
+import AdBanner from '../ads/AdBanner'
 
 export default function Footer() {
   const [footerAds, setFooterAds] = useState([])
@@ -48,27 +49,10 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        {/* Footer ads */}
+        {/* Footer ads — full banners (not 32px thumbnails); stacked, centred, never cropped */}
         {footerAds.length > 0 && (
-          <div className="border-t border-dark-700 pt-6 mb-6">
-            <div className="flex flex-wrap gap-4 justify-center">
-              {footerAds.map(ad => {
-                const media = ad.media?.[0]
-                return (
-                  <a key={ad.id} href={ad.link_url || '#'} target="_blank" rel="noopener noreferrer"
-                    onClick={() => api.post(`/admin/ads/${ad.id}/click`).catch(() => {})}
-                    className="flex items-center gap-3 bg-dark-800 border border-dark-600 hover:border-brand-500 rounded-xl px-4 py-2.5 transition-colors group">
-                    {media && (
-                      <LazyImage src={media.url} alt={ad.title} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
-                    )}
-                    <div>
-                      <p className="text-xs font-medium text-white group-hover:text-brand-300 transition-colors">{ad.title}</p>
-                      <span className="text-[10px] text-gray-600">Sponsored</span>
-                    </div>
-                  </a>
-                )
-              })}
-            </div>
+          <div className="border-t border-dark-700 pt-6 mb-6 max-w-3xl mx-auto space-y-3">
+            {footerAds.map(ad => <AdBanner key={ad.id} ad={ad} placement="footer" />)}
           </div>
         )}
 

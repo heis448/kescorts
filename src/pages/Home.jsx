@@ -17,6 +17,7 @@ import HomeSearch from '../components/home/HomeSearch'
 import FeaturedRail from '../components/home/FeaturedRail'
 import SponsoredRail from '../components/home/SponsoredRail'
 import { buildFeed } from '../components/home/FeedCards'
+import ScrollRail from '../components/ui/ScrollRail'
 
 const PAGE = 20
 const arr = (x) => (Array.isArray(x) ? x : [])
@@ -105,7 +106,7 @@ function HomeContent() {
       }).catch(e => { setLoading(false); reportError(e, 'Could not load escorts') })
     }
     api.get('/search/online').then(r => setOnline(arr(r.data))).catch(() => {})
-    api.get('/search/ads').then(r => setAds(arr(r.data))).catch(() => {})
+    api.get('/search/ads?placement=homepage').then(r => setAds(arr(r.data))).catch(() => {})
     api.get('/stories').then(r => setStories(arr(r.data))).catch(() => {})
     api.get('/admin/announcements').then(r => setAnnouncements(arr(r.data))).catch(() => {})
     api.get('/blog?limit=8').then(r => setBlog(r.data?.posts || r.data || [])).catch(() => {})
@@ -125,7 +126,7 @@ function HomeContent() {
       if (!socket) return
       const onUpdate = ({ type }) => {
         if (type === 'announcement') api.get('/admin/announcements').then(r => setAnnouncements(arr(r.data))).catch(() => {})
-        if (type === 'ads')          api.get('/search/ads').then(r => setAds(arr(r.data))).catch(() => {})
+        if (type === 'ads')          api.get('/search/ads?placement=homepage').then(r => setAds(arr(r.data))).catch(() => {})
         if (type === 'sponsored')    api.get('/admin/sponsored').then(r => setSponsored(arr(r.data).filter(s => s.is_active))).catch(() => {})
       }
       socket.on('content_updated', onUpdate)
@@ -229,7 +230,7 @@ function HomeContent() {
               <h2 className="text-base font-bold text-white flex items-center gap-2"><BookOpen size={16} className="text-brand-400" /> From the blog</h2>
               <Link to="/blog" className="text-xs text-brand-400">All posts</Link>
             </div>
-            <div className="flex gap-3 overflow-x-auto snap-x no-scrollbar px-4 pb-1">
+            <ScrollRail className="flex gap-3 overflow-x-auto snap-x no-scrollbar px-4 pb-1">
               {blog.map(post => (
                 <Link key={post.id} to={`/blog/${post.slug}`} className="w-44 flex-shrink-0 snap-start bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden hover:border-brand-600/40 transition-all group">
                   {post.cover_url
@@ -241,7 +242,7 @@ function HomeContent() {
                   </div>
                 </Link>
               ))}
-            </div>
+            </ScrollRail>
           </section>
         )}
 

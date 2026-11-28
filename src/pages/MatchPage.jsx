@@ -14,6 +14,7 @@ import PullToRefresh from '../components/ui/PullToRefresh'
 import LazyImage from '../components/ui/LazyImage'
 import { ExpandableMedia } from '../components/ui/MediaGallery'
 import { waDigits, telHref } from '../utils/phone'
+import ScrollRail from '../components/ui/ScrollRail'
 
 const PREF_KEY = 'match_guest_prefs'
 
@@ -246,7 +247,7 @@ export default function MatchPage() {
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          <ScrollRail className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {TABS.map(t => (
               <button
                 key={t.key}
@@ -261,7 +262,7 @@ export default function MatchPage() {
                 {t.key === 'verified' && <BlueTick size={12} className="ml-1.5 -mt-0.5" />}
               </button>
             ))}
-          </div>
+          </ScrollRail>
 
           {/* For You label */}
           {tab === 'for_you' && hasPrefs && (

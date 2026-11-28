@@ -8,7 +8,7 @@ import { ExpandableMedia } from './MediaGallery'
 //   expandable  — tapping the media opens the full-screen viewer (swipe/zoom). Arrows, dots and links keep working.
 //   loadFull    — optional async () => items, fetched when the viewer opens
 //   footer      — optional node | (close) => node shown in the viewer
-export default function CardSlider({ items = [], interval = 7000, className = '', children, expandable = false, loadFull, footer, onOpen }) {
+export default function CardSlider({ items = [], interval = 7000, className = '', children, expandable = false, loadFull, footer, onOpen, fit = 'cover', alt = '' }) {
   const [current, setCurrent] = useState(0)
   const timerRef = useRef(null)
   const touch    = useRef(null)
@@ -49,7 +49,15 @@ export default function CardSlider({ items = [], interval = 7000, className = ''
   const body = (
     <>
       {/* Media */}
-      {item.type === 'video'
+      {fit === 'contain' ? (
+        // Show the whole picture; the spare space is filled with a blurred copy of it (used by ads, so nothing gets cropped)
+        item.type === 'video'
+          ? <video src={item.url} className="absolute inset-0 w-full h-full object-contain bg-black" autoPlay muted loop playsInline />
+          : <>
+              <img src={item.url} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-60" />
+              <img src={item.url} alt={alt} loading="lazy" decoding="async" draggable={false} className="absolute inset-0 w-full h-full object-contain" />
+            </>
+      ) : item.type === 'video'
         ? <video src={item.url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
         : <LazyImage src={item.url} className="w-full h-full" />
       }

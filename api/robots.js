@@ -12,6 +12,7 @@ module.exports = (req, res) => {
     'Disallow: /wallet',
     'Disallow: /membership',
     'Disallow: /sponsor-stats',
+    'Disallow: /ad-stats',
     '',
     `Sitemap: ${SITE}/sitemap.xml`,
     '',

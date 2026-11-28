@@ -5,6 +5,7 @@ import api from '../../utils/api'
 import MediaUploader from '../../components/ui/MediaUploader'
 import MediaGallery from '../../components/ui/MediaGallery'
 import toast from 'react-hot-toast'
+import { AD_SIZES } from '../../components/ads/AdBanner'
 
 const EMPTY = { title: '', link_url: '', placement: 'homepage', ends_at: '', is_active: true, autoplay: true }
 const PLACEMENTS = ['sidebar', 'homepage', 'listing', 'footer']
@@ -130,6 +131,17 @@ export default function AdminAds() {
               <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
                 <span className="flex items-center gap-1"><Eye size={11} /> {ad.impressions} views</span>
                 <span className="flex items-center gap-1"><MousePointer size={11} /> {ad.clicks} clicks</span>
+                <span title="Clicks ÷ views">📈 {ad.impressions > 0 ? Math.round((ad.clicks / ad.impressions) * 1000) / 10 : 0}%</span>
+                {ad.stats_token && (
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/ad-stats/${ad.stats_token}`
+                      navigator.clipboard?.writeText(url).then(() => toast.success('Report link copied — send it to the advertiser'), () => toast(url))
+                    }}
+                    className="ml-auto text-brand-400 hover:text-brand-300 underline underline-offset-2">
+                    Copy report link
+                  </button>
+                )}
               </div>
               {ad.ends_at && <p className="text-xs text-gray-600 mb-3">Expires: {format(new Date(ad.ends_at), 'dd MMM yyyy')}</p>}
               <div className="flex gap-2">
@@ -169,8 +181,9 @@ export default function AdminAds() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Placement</label>
                   <select className="input text-sm" value={form.placement} onChange={e => setForm({ ...form, placement: e.target.value })}>
-                    {PLACEMENTS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
+                    {PLACEMENTS.map(p => <option key={p} value={p}>{AD_SIZES[p].label}</option>)}
                   </select>
+                  <p className="text-[11px] text-gray-500 mt-1.5">Best image: <span className="text-gray-300">{AD_SIZES[form.placement]?.rec}</span>. Shown in full, never cropped.</p>
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Expires</label>

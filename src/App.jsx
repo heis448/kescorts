@@ -119,6 +119,7 @@ export default function App() {
         <Route path="/match"       element={<PublicLayout><MatchPage /></PublicLayout>} />
         <Route path="/match/:uuid" element={<PublicLayout><MatchProfile /></PublicLayout>} />
         <Route path="/sponsor-stats/:token" element={<PublicLayout><SponsorStats /></PublicLayout>} />
+        <Route path="/ad-stats/:token" element={<PublicLayout><SponsorStats kind="ads" /></PublicLayout>} />
         <Route path="/login"       element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/register"    element={<PublicLayout><Register /></PublicLayout>} />
 

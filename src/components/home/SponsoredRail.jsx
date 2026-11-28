@@ -5,6 +5,7 @@ import { ExpandableMedia } from '../ui/MediaGallery'
 import { mediaOf, openUrl, WaIcon, trackSponsored } from './FeedCards'
 import { useImpression } from './useImpression'
 import { telHref } from '../../utils/phone'
+import ScrollRail from '../ui/ScrollRail'
 
 // Every active sponsor, in a swipeable row. (One in-feed slot can only show one at a time; this shows them all.)
 function SponsoredMini({ s }) {
@@ -58,11 +59,11 @@ export default function SponsoredRail({ items = [] }) {
     <section className="mt-5" data-testid="sponsored-rail">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between mb-3">
         <h2 className="flex items-center gap-2 text-base font-bold text-white">Sponsored <span className="text-[10px] font-semibold text-amber-400 border border-amber-400/40 rounded-full px-2 py-0.5">{items.length}</span></h2>
-        {items.length > 1 && <span className="text-[11px] text-gray-500">Swipe →</span>}
+        {items.length > 1 && <span className="text-[11px] text-gray-500 md:hidden">Swipe →</span>}
       </div>
-      <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 pb-1">
+      <ScrollRail className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 pb-1">
         {items.map(s => <SponsoredMini key={s.id} s={s} />)}
-      </div>
+      </ScrollRail>
     </section>
   )
 }

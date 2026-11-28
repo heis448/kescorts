@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom'
 import { StoryRing } from '../ui/StoryViewer'
 import LazyImage from '../ui/LazyImage'
+import ScrollRail from '../ui/ScrollRail'
 
 // Instagram-style top rail: stories first (red rings), then who is online right now (green rings).
 export default function StoriesRow({ stories = [], online = [], onOpenStory }) {
   if (!stories.length && !online.length) return null
   return (
     <div className="max-w-7xl mx-auto px-4 mt-3" data-testid="stories-row">
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1 items-start">
+      <ScrollRail className="flex gap-4 overflow-x-auto no-scrollbar pb-1 items-start">
         {stories.map((g, i) => (
           <StoryRing key={g.user_id} user={{ name: g.name, avatar: g.avatar, is_online: g.is_online }}
             stories={g.stories} size="md" onClick={() => onOpenStory?.(i)} />
@@ -26,7 +27,7 @@ export default function StoriesRow({ stories = [], online = [], onOpenStory }) {
             <span className="text-[11px] text-gray-300 group-hover:text-white truncate max-w-full">{e.name || ''}</span>
           </Link>
         ))}
-      </div>
+      </ScrollRail>
       {online.length > 0 && <p className="text-[10px] text-green-400/80 font-medium tracking-wide mt-0.5">● {online.length} online now</p>}
     </div>
   )

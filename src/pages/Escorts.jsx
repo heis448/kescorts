@@ -11,9 +11,10 @@ import Seo from '../components/Seo'
 import { cityFromSlug, cityPath, COUNTIES } from '../utils/cities'
 import { Link } from 'react-router-dom'
 import { reportError } from '../utils/reportError'
-import LazyImage from '../components/ui/LazyImage'
+import AdBanner from '../components/ads/AdBanner'
 
-const AD_EVERY = 3 // inject a listing ad every 3 escort cards
+const AD_EVERY_PHONE = 6   // banner after every 6 profiles on phones (3 rows of 2)
+const AD_EVERY_DESKTOP = 9 // …and after every 9 on desktop (3 rows of 3)
 
 export default function Escorts() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -28,6 +29,16 @@ export default function Escorts() {
   const [view, setView]         = useState('grid')
   const [sidebarAds, setSidebarAds]   = useState([])
   const [listingAds, setListingAds]   = useState([])
+  const [isLg, setIsLg] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const h = (e) => setIsLg(e.matches)
+    mq.addEventListener('change', h)
+    return () => mq.removeEventListener('change', h)
+  }, [])
+  const adEvery = isLg ? AD_EVERY_DESKTOP : AD_EVERY_PHONE
+  // On phones the sidebar ads are not shown in the sidebar, so they join the banners between profiles
+  const inlineAds = isLg ? listingAds : [...listingAds, ...sidebarAds]
 
   const [filters, setFilters] = useState({
     county:      searchParams.get('county') || cityName,
@@ -127,29 +138,12 @@ export default function Escorts() {
           <div className="sticky top-20 space-y-4">
             <SearchFilters filters={filters} onChange={handleFiltersChange} />
 
-            {/* Sidebar ads */}
-            {sidebarAds.map(ad => {
-              const media = Array.isArray(ad.media) && ad.media.length > 0 ? ad.media[0] : null
-              return (
-                <div key={ad.id}
-                  onClick={() => { api.post(`/admin/ads/${ad.id}/click`).catch(() => {}); if (ad.link_url) window.open(ad.link_url, '_blank') }}
-                  className={`block rounded-2xl overflow-hidden bg-dark-800 border border-dark-600 hover:border-brand-500 transition-colors group ${ad.link_url ? 'cursor-pointer' : ''}`}>
-                  {media ? (
-                    media.type === 'video'
-                      ? <video src={media.url} className="w-full h-32 object-cover" autoPlay={ad.autoplay} muted loop playsInline />
-                      : <LazyImage src={media.url} alt={ad.title} className="w-full h-32 object-cover group-hover:opacity-90 transition-opacity" />
-                  ) : (
-                    <div className="w-full h-32 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
-                      <p className="text-white text-sm font-bold px-3 text-center">{ad.title}</p>
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <p className="text-sm font-bold text-white">{ad.title}</p>
-                    <span className="text-[10px] text-gray-400">Sponsored</span>
-                  </div>
-                </div>
-              )
-            })}
+            {/* Sidebar ads — desktop only (on phones they used to push the results ~400px down; phones get them between profiles instead) */}
+            {sidebarAds.length > 0 && (
+              <div className="hidden lg:block space-y-4">
+                {sidebarAds.map(ad => <AdBanner key={ad.id} ad={ad} placement="sidebar" />)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -172,33 +166,12 @@ export default function Escorts() {
               }>
                 {escorts.map((e, i) => {
                   const items = [<EscortCard key={e.uuid} escort={e} index={i} />]
-                  // Inject a listing ad after every AD_EVERY cards, or at the end if list is short
-                  const shouldInjectAd = view === 'grid' && listingAds.length > 0 && (
-                    (i + 1) % AD_EVERY === 0 ||
-                    (i === escorts.length - 1 && escorts.length < AD_EVERY)
-                  )
-                  if (shouldInjectAd) {
-                    const ad = listingAds[(Math.floor((i + 1) / AD_EVERY) - 1) % listingAds.length]
-                    const media = Array.isArray(ad.media) && ad.media.length > 0 ? ad.media[0] : null
-                    items.push(
-                      <div key={`ad-${i}`}
-                        onClick={() => { api.post(`/admin/ads/${ad.id}/click`).catch(() => {}); if (ad.link_url) window.open(ad.link_url, '_blank') }}
-                        className={`block rounded-2xl overflow-hidden bg-dark-800 border border-dashed border-dark-500 hover:border-brand-500 transition-colors group ${ad.link_url ? 'cursor-pointer' : ''}`}>
-                        {media ? (
-                          media.type === 'video'
-                            ? <video src={media.url} className="w-full aspect-[3/4] object-cover" autoPlay={ad.autoplay} muted loop playsInline />
-                            : <LazyImage src={media.url} alt={ad.title} className="w-full aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity" />
-                        ) : (
-                          <div className="w-full aspect-[3/4] bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
-                            <p className="text-white text-sm font-bold px-3 text-center">{ad.title}</p>
-                          </div>
-                        )}
-                        <div className="p-3">
-                          <p className="text-sm font-bold text-white line-clamp-1">{ad.title}</p>
-                          <span className="text-[10px] text-gray-400">Sponsored</span>
-                        </div>
-                      </div>
-                    )
+                  // A full-width, clearly labelled banner after every `adEvery` profiles (or at the end of a short list).
+                  // Full width keeps the card rows aligned and makes it obvious it is an ad, not a profile.
+                  const inject = inlineAds.length > 0 && ((i + 1) % adEvery === 0 || (i === escorts.length - 1 && escorts.length < adEvery))
+                  if (inject) {
+                    const ad = inlineAds[Math.max(0, Math.floor((i + 1) / adEvery) - 1) % inlineAds.length]
+                    items.push(<AdBanner key={`ad-${i}`} ad={ad} placement="listing" className="col-span-2 sm:col-span-3" />)
                   }
                   return items
                 })}

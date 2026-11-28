@@ -4,6 +4,7 @@ import CardSlider from '../ui/CardSlider'
 import EscortCard from '../escort/EscortCard'
 import { useImpression } from './useImpression'
 import { telHref } from '../../utils/phone'
+import AdBanner from '../ads/AdBanner'
 
 const FULL = 'col-span-2 sm:col-span-3 lg:col-span-4'
 export const mediaOf = (x) => (Array.isArray(x.media) ? x.media : []).filter(m => m?.url).map(m => ({ url: m.url, type: m.type || 'image' }))
@@ -58,15 +59,8 @@ export function SponsoredCard({ s }) {
 
 // A banner ad inside the feed (full width, labelled "Ad").
 export function AdCard({ ad }) {
-  const media = mediaOf(ad)
-  if (!media.length) return null
-  return (
-    <div onClick={() => { api.post(`/admin/ads/${ad.id}/click`).catch(() => {}); openUrl(ad.link_url) }}
-      className={`${FULL} relative rounded-2xl overflow-hidden border border-dark-600 bg-dark-800 aspect-[16/8] ${ad.link_url ? 'cursor-pointer active:scale-[.99]' : ''} transition`} data-testid="ad-card">
-      <CardSlider items={media} className="w-full h-full" />
-      <span className="absolute bottom-2 left-2 text-[10px] font-bold uppercase tracking-wide bg-black/75 text-white px-2 py-0.5 rounded-full pointer-events-none">Ad</span>
-    </div>
-  )
+  if (!mediaOf(ad).length) return null
+  return <div className={FULL}><AdBanner ad={ad} placement="homepage" testId="ad-card" /></div>
 }
 
 // Where things sit in the feed.
